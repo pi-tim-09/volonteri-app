@@ -1,0 +1,247 @@
+@model WebApp.Models.Project
+
+@{
+    ViewData["Title"] = "Edit Project";
+    var organizations = ViewBag.Organizations as List<WebApp.Models.Organization>;
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">
+                        <i class="bi bi-pencil-square"></i> Edit Project
+                    </h2>
+                </div>
+                <div class="card-body">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <form asp-action="Edit" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="CreatedAt" />
+                        <input type="hidden" asp-for="UpdatedAt" />
+                        <input type="hidden" asp-for="CurrentVolunteers" />
+
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <!-- Basic Information Section -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Basic Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8 mb-3">
+                                        <label asp-for="Title" class="form-label">Project Title <span class="text-danger">*</span></label>
+                                        <input asp-for="Title" class="form-control" placeholder="Enter project title" />
+                                        <span asp-validation-for="Title" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label asp-for="Status" class="form-label">Status <span class="text-danger">*</span></label>
+                                        <select asp-for="Status" class="form-select">
+                                            <option value="@ProjectStatus.Draft">Draft</option>
+                                            <option value="@ProjectStatus.Published">Published</option>
+                                            <option value="@ProjectStatus.InProgress">In Progress</option>
+                                            <option value="@ProjectStatus.Completed">Completed</option>
+                                            <option value="@ProjectStatus.Cancelled">Cancelled</option>
+                                        </select>
+                                        <span asp-validation-for="Status" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Description" class="form-label">Description <span class="text-danger">*</span></label>
+                                    <textarea asp-for="Description" class="form-control" rows="4" placeholder="Describe the project in detail..."></textarea>
+                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="OrganizationId" class="form-label">Organization <span class="text-danger">*</span></label>
+                                    <select asp-for="OrganizationId" class="form-select">
+                                        <option value="">-- Select Organization --</option>
+                                        @if (organizations != null)
+                                        {
+                                            @foreach (var org in organizations)
+                                            {
+                                                <option value="@org.Id">@org.OrganizationName</option>
+                                            }
+                                        }
+                                    </select>
+                                    <span asp-validation-for="OrganizationId" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Location Section -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="bi bi-geo-alt"></i> Location Details</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="Location" class="form-label">Location <span class="text-danger">*</span></label>
+                                        <input asp-for="Location" class="form-control" placeholder="e.g., Main Square, Park Name" />
+                                        <span asp-validation-for="Location" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="City" class="form-label">City <span class="text-danger">*</span></label>
+                                        <input asp-for="City" class="form-control" placeholder="e.g., Zagreb, Split" />
+                                        <span asp-validation-for="City" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dates Section -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="bi bi-calendar-event"></i> Project Dates</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label asp-for="StartDate" class="form-label">Start Date <span class="text-danger">*</span></label>
+                                        <input asp-for="StartDate" type="datetime-local" class="form-control" />
+                                        <span asp-validation-for="StartDate" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label asp-for="EndDate" class="form-label">End Date <span class="text-danger">*</span></label>
+                                        <input asp-for="EndDate" type="datetime-local" class="form-control" />
+                                        <span asp-validation-for="EndDate" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label asp-for="ApplicationDeadline" class="form-label">Application Deadline <span class="text-danger">*</span></label>
+                                        <input asp-for="ApplicationDeadline" type="datetime-local" class="form-control" />
+                                        <span asp-validation-for="ApplicationDeadline" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Volunteers Section -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="bi bi-people"></i> Volunteer Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="MaxVolunteers" class="form-label">Maximum Volunteers <span class="text-danger">*</span></label>
+                                        <input asp-for="MaxVolunteers" type="number" class="form-control" min="1" placeholder="e.g., 20" />
+                                        <span asp-validation-for="MaxVolunteers" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Current Volunteers (Read-only)</label>
+                                        <input value="@Model.CurrentVolunteers" type="number" class="form-control" readonly disabled />
+                                        <small class="text-muted">
+                                            Available slots: @(Model.MaxVolunteers - Model.CurrentVolunteers)
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Required Skills</label>
+                                    <input type="text" id="skillsInput" class="form-control" placeholder="Enter skills (comma-separated)" 
+                                           value="@string.Join(", ", Model.RequiredSkills ?? new List<string>())" />
+                                    <small class="text-muted">Separate multiple skills with commas</small>
+                                    <input type="hidden" asp-for="RequiredSkills" id="skillsHidden" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Categories</label>
+                                    <input type="text" id="categoriesInput" class="form-control" placeholder="Enter categories (comma-separated)" 
+                                           value="@string.Join(", ", Model.Categories ?? new List<string>())" />
+                                    <small class="text-muted">Separate multiple categories with commas</small>
+                                    <input type="hidden" asp-for="Categories" id="categoriesHidden" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Project Info Card -->
+            <div class="card mt-4 shadow-sm">
+                <div class="card-body">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle"></i> 
+                        Project created on: <strong>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</strong>
+                        @if (Model.UpdatedAt.HasValue)
+                        {
+                            <span> | Last updated: <strong>@Model.UpdatedAt.Value.ToString("dd/MM/yyyy HH:mm")</strong></span>
+                        }
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Handle skills and categories as comma-separated lists
+        $(document).ready(function() {
+            // When form is submitted, convert comma-separated values to JSON arrays
+            $('form').on('submit', function() {
+                var skills = $('#skillsInput').val().split(',').map(s => s.trim()).filter(s => s.length > 0);
+                var categories = $('#categoriesInput').val().split(',').map(s => s.trim()).filter(s => s.length > 0);
+                
+                $('#skillsHidden').val(JSON.stringify(skills));
+                $('#categoriesHidden').val(JSON.stringify(categories));
+            });
+
+            // Validate date logic
+            $('#@Html.IdFor(m => m.EndDate), #@Html.IdFor(m => m.ApplicationDeadline)').on('change', function() {
+                var startDate = new Date($('#@Html.IdFor(m => m.StartDate)').val());
+                var endDate = new Date($('#@Html.IdFor(m => m.EndDate)').val());
+                var deadline = new Date($('#@Html.IdFor(m => m.ApplicationDeadline)').val());
+
+                if (endDate < startDate) {
+                    alert('End date cannot be before start date!');
+                    $('#@Html.IdFor(m => m.EndDate)').val('');
+                }
+
+                if (deadline > startDate) {
+                    alert('Application deadline should be before the project start date!');
+                }
+            });
+
+            // Validate max volunteers
+            $('#@Html.IdFor(m => m.MaxVolunteers)').on('change', function() {
+                var maxVol = parseInt($(this).val());
+                var currentVol = @Model.CurrentVolunteers;
+
+                if (maxVol < currentVol) {
+                    alert('Maximum volunteers (' + maxVol + ') cannot be less than current volunteers (' + currentVol + ')!');
+                    $(this).val(currentVol);
+                }
+            });
+        });
+    </script>
+}
