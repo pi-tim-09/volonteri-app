@@ -44,6 +44,20 @@
                             </a>
                         </li>
                     </ul>
+                    @{
+                        var isLoggedIn = Context.Session.GetInt32("UserId") != null;
+                    }
+                    @if (isLoggedIn)
+                    {
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-danger">Odjava</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a class="btn btn-primary ms-2" asp-controller="Account" asp-action="Login">Prijava</a>
+                        <a class="btn btn-secondary ms-2" asp-controller="Account" asp-action="Register">Registracija</a>
+                    }
                 </div>
             </div>
         </nav>
