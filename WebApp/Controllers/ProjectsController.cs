@@ -32,7 +32,62 @@ namespace WebApp.Controllers
             return View(projects);
         }
 
-        // Mock data method - will be replaced with real data after DB setup
+        // GET: Projects/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            // For now mock data. After DB setup: var project = await _unitOfWork.Projects.GetByIdAsync(id.Value);
+            var project = GetMockProjects().FirstOrDefault(p => p.Id == id.Value);
+
+            if (project == null)
+            {
+                return NotFound();
+            }
+
+            // Load organizations for dropdown
+            ViewBag.Organizations = GetMockOrganizations();
+
+            return View(project);
+        }
+
+        // POST: Projects/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, Project project)
+        {
+            if (id != project.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // After DB setup, this will use:
+                    // _unitOfWork.Projects.Update(project);
+                    // await _unitOfWork.SaveChangesAsync();
+
+                    TempData["SuccessMessage"] = $"Project '{project.Title}' has been updated successfully.";
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error updating project {ProjectId}", id);
+                    ModelState.AddModelError("", "Unable to save changes. Please try again.");
+                }
+            }
+
+            // If we got here, something failed, reload organizations and redisplay form
+            ViewBag.Organizations = GetMockOrganizations();
+            return View(project);
+        }
+
+        // Mock data method
         private List<Project> GetMockProjects()
         {
             return new List<Project>
