@@ -11,6 +11,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<IUnitOfWork, InMemoryUnitOfWork>();
 builder.Services.AddSession();
 
+builder.Services.AddScoped<IVolunteerRepository, WebApp.Repositories.VolunteerRepository>();
+builder.Services.AddScoped<IOrganizationRepository, WebApp.Repositories.OrganizationRepository>();
+builder.Services.AddScoped<IProjectRepository, WebApp.Repositories.ProjectRepository>();
+builder.Services.AddScoped<IApplicationRepository, WebApp.Repositories.ApplicationRepository>();
+builder.Services.AddScoped<IAdminRepository, WebApp.Repositories.AdminRepository>();
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
