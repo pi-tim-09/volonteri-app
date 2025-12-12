@@ -1,0 +1,284 @@
+﻿@model WebApp.Models.User
+
+@{
+    ViewData["Title"] = "User Details";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h2 class="mb-0"><i class="bi bi-person-badge"></i> User Details</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h4 class="border-bottom pb-2">Personal Information</h4>
+                            
+                            <div class="mb-3">
+                                <label class="fw-bold text-muted">ID:</label>
+                                <p class="ms-3">@Model.Id</p>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="fw-bold text-muted">Full Name:</label>
+                                <p class="ms-3">
+                                    <i class="bi bi-person"></i> @Model.FirstName @Model.LastName
+                                </p>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="fw-bold text-muted">Email:</label>
+                                <p class="ms-3">
+                                    <i class="bi bi-envelope"></i> 
+                                    <a href="mailto:@Model.Email">@Model.Email</a>
+                                </p>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="fw-bold text-muted">Phone Number:</label>
+                                <p class="ms-3">
+                                    <i class="bi bi-telephone"></i> @Model.PhoneNumber
+                                </p>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="fw-bold text-muted">Role:</label>
+                                <p class="ms-3">
+                                    @switch (Model.Role)
+                                    {
+                                        case WebApp.Models.UserRole.Admin:
+                                            <span class="badge bg-danger fs-6">
+                                                <i class="bi bi-shield-fill-check"></i> Admin
+                                            </span>
+                                            break;
+                                        case WebApp.Models.UserRole.Organization:
+                                            <span class="badge bg-primary fs-6">
+                                                <i class="bi bi-building"></i> Organization
+                                            </span>
+                                            break;
+                                        case WebApp.Models.UserRole.Volunteer:
+                                            <span class="badge bg-success fs-6">
+                                                <i class="bi bi-person-heart"></i> Volunteer
+                                            </span>
+                                            break;
+                                    }
+                                </p>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="fw-bold text-muted">Status:</label>
+                                <p class="ms-3">
+                                    @if (Model.IsActive)
+                                    {
+                                        <span class="badge bg-success fs-6">
+                                            <i class="bi bi-check-circle"></i> Active
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary fs-6">
+                                            <i class="bi bi-x-circle"></i> Inactive
+                                        </span>
+                                    }
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h4 class="border-bottom pb-2">Account Information</h4>
+
+                            <div class="mb-3">
+                                <label class="fw-bold text-muted">Created At:</label>
+                                <p class="ms-3">
+                                    <i class="bi bi-calendar-plus"></i> @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                                </p>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="fw-bold text-muted">Last Login:</label>
+                                <p class="ms-3">
+                                    @if (Model.LastLoginAt.HasValue)
+                                    {
+                                        <i class="bi bi-clock-history"></i> @Model.LastLoginAt.Value.ToString("dd/MM/yyyy HH:mm")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Never logged in</span>
+                                    }
+                                </p>
+                            </div>
+
+                            @if (Model is WebApp.Models.Admin admin)
+                            {
+                                <h4 class="border-bottom pb-2 mt-4">Admin Permissions</h4>
+                                
+                                <div class="mb-3">
+                                    <label class="fw-bold text-muted">Department:</label>
+                                    <p class="ms-3">@admin.Department</p>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="fw-bold text-muted">Permissions:</label>
+                                    <ul class="ms-3">
+                                        <li>
+                                            @if (admin.CanManageUsers)
+                                            {
+                                                <i class="bi bi-check-circle-fill text-success"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-x-circle-fill text-danger"></i>
+                                            }
+                                            Can Manage Users
+                                        </li>
+                                        <li>
+                                            @if (admin.CanManageOrganizations)
+                                            {
+                                                <i class="bi bi-check-circle-fill text-success"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-x-circle-fill text-danger"></i>
+                                            }
+                                            Can Manage Organizations
+                                        </li>
+                                        <li>
+                                            @if (admin.CanManageProjects)
+                                            {
+                                                <i class="bi bi-check-circle-fill text-success"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-x-circle-fill text-danger"></i>
+                                            }
+                                            Can Manage Projects
+                                        </li>
+                                    </ul>
+                                </div>
+                            }
+
+                            @if (Model is WebApp.Models.Organization org)
+                            {
+                                <h4 class="border-bottom pb-2 mt-4">Organization Details</h4>
+                                
+                                <div class="mb-3">
+                                    <label class="fw-bold text-muted">Organization Name:</label>
+                                    <p class="ms-3">@org.OrganizationName</p>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="fw-bold text-muted">Description:</label>
+                                    <p class="ms-3">@org.Description</p>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="fw-bold text-muted">Address:</label>
+                                    <p class="ms-3">
+                                        <i class="bi bi-geo-alt"></i> @org.Address, @org.City
+                                    </p>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="fw-bold text-muted">Verification Status:</label>
+                                    <p class="ms-3">
+                                        @if (org.IsVerified)
+                                        {
+                                            <span class="badge bg-success fs-6">
+                                                <i class="bi bi-patch-check-fill"></i> Verified
+                                            </span>
+                                            <br />
+                                            <small class="text-muted">Verified on: @org.VerifiedAt?.ToString("dd/MM/yyyy")</small>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning fs-6">
+                                                <i class="bi bi-hourglass-split"></i> Pending Verification
+                                            </span>
+                                        }
+                                    </p>
+                                </div>
+                            }
+
+                            @if (Model is WebApp.Models.Volunteer volunteer)
+                            {
+                                <h4 class="border-bottom pb-2 mt-4">Volunteer Details</h4>
+                                
+                                <div class="mb-3">
+                                    <label class="fw-bold text-muted">Date of Birth:</label>
+                                    <p class="ms-3">
+                                        @if (volunteer.DateOfBirth.HasValue)
+                                        {
+                                            @volunteer.DateOfBirth.Value.ToString("dd/MM/yyyy")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Not specified</span>
+                                        }
+                                    </p>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="fw-bold text-muted">Location:</label>
+                                    <p class="ms-3">
+                                        <i class="bi bi-geo-alt"></i> @volunteer.Address, @volunteer.City
+                                    </p>
+                                </div>
+
+                                @if (!string.IsNullOrEmpty(volunteer.Bio))
+                                {
+                                    <div class="mb-3">
+                                        <label class="fw-bold text-muted">Bio:</label>
+                                        <p class="ms-3">@volunteer.Bio</p>
+                                    </div>
+                                }
+
+                                <div class="mb-3">
+                                    <label class="fw-bold text-muted">Skills:</label>
+                                    <p class="ms-3">
+                                        @foreach (var skill in volunteer.Skills)
+                                        {
+                                            <span class="badge bg-primary me-1">@skill</span>
+                                        }
+                                    </p>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="fw-bold text-muted">Interests:</label>
+                                    <p class="ms-3">
+                                        @foreach (var interest in volunteer.Interests)
+                                        {
+                                            <span class="badge bg-info me-1">@interest</span>
+                                        }
+                                    </p>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="fw-bold text-muted">Volunteer Hours:</label>
+                                    <p class="ms-3">
+                                        <span class="badge bg-success fs-5">@volunteer.VolunteerHours hours</span>
+                                    </p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to List
+                        </a>
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                            <i class="bi bi-pencil"></i> Edit
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Delete
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
