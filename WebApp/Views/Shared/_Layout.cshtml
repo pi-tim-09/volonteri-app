@@ -56,13 +56,13 @@
                     @if (isLoggedIn)
                     {
                         <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                            <button type="submit" class="btn btn-danger">Odjava</button>
+                            <button type="submit" class="btn btn-danger">Logout</button>
                         </form>
                     }
                     else
                     {
-                        <a class="btn btn-primary ms-2" asp-controller="Account" asp-action="Login">Prijava</a>
-                        <a class="btn btn-secondary ms-2" asp-controller="Account" asp-action="Register">Registracija</a>
+                        <a class="btn btn-primary ms-2" asp-controller="Account" asp-action="Login">Login</a>
+                        <a class="btn btn-secondary ms-2" asp-controller="Account" asp-action="Register">Register</a>
                     }
                 </div>
             </div>
