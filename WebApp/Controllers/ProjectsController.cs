@@ -1,35 +1,52 @@
 using Microsoft.AspNetCore.Mvc;
-using WebApp.Interfaces;
+using WebApp.Interfaces.Services;
 using WebApp.Models;
 
 namespace WebApp.Controllers
 {
     public class ProjectsController : Controller
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IProjectService _projectService;
+        private readonly IOrganizationService _organizationService;
         private readonly ILogger<ProjectsController> _logger;
 
-        public ProjectsController(IUnitOfWork unitOfWork, ILogger<ProjectsController> logger)
+        public ProjectsController(
+            IProjectService projectService,
+            IOrganizationService organizationService,
+            ILogger<ProjectsController> logger)
         {
-            _unitOfWork = unitOfWork;
+            _projectService = projectService;
+            _organizationService = organizationService;
             _logger = logger;
         }
 
         // GET: Projects
         public async Task<IActionResult> Index(int? organizationId)
         {
-            // For now, return mock data. After DB setup, this will use _unitOfWork.Projects.GetAllAsync()
-            var projects = GetMockProjects();
-
-            // Filter by organization if specified
-            if (organizationId.HasValue)
+            try
             {
-                projects = projects.Where(p => p.OrganizationId == organizationId.Value).ToList();
-                ViewBag.OrganizationName = GetMockOrganizations()
-                    .FirstOrDefault(o => o.Id == organizationId.Value)?.OrganizationName;
-            }
+                IEnumerable<Project> projects;
 
-            return View(projects);
+                if (organizationId.HasValue)
+                {
+                    // Use service layer - add this method to IProjectService
+                    projects = await _projectService.GetProjectsByOrganizationAsync(organizationId.Value);
+                    var organization = await _organizationService.GetOrganizationByIdAsync(organizationId.Value);
+                    ViewBag.OrganizationName = organization?.OrganizationName;
+                }
+                else
+                {
+                    projects = await _projectService.GetAllProjectsAsync();
+                }
+
+                return View(projects);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading projects index page");
+                TempData["ErrorMessage"] = "An error occurred while loading projects.";
+                return View(new List<Project>());
+            }
         }
 
         // GET: Projects/Edit/5
@@ -40,18 +57,26 @@ namespace WebApp.Controllers
                 return NotFound();
             }
 
-            // For now mock data. After DB setup: var project = await _unitOfWork.Projects.GetByIdAsync(id.Value);
-            var project = GetMockProjects().FirstOrDefault(p => p.Id == id.Value);
-
-            if (project == null)
+            try
             {
-                return NotFound();
+                var project = await _projectService.GetProjectByIdAsync(id.Value);
+
+                if (project == null)
+                {
+                    return NotFound();
+                }
+
+                // Load organizations for dropdown
+                ViewBag.Organizations = await _organizationService.GetAllOrganizationsAsync();
+
+                return View(project);
             }
-
-            // Load organizations for dropdown
-            ViewBag.Organizations = GetMockOrganizations();
-
-            return View(project);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading project for edit: {ProjectId}", id);
+                TempData["ErrorMessage"] = "An error occurred while loading the project.";
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         // POST: Projects/Edit/5
@@ -68,9 +93,11 @@ namespace WebApp.Controllers
             {
                 try
                 {
-                    // After DB setup, this will use:
-                    // _unitOfWork.Projects.Update(project);
-                    // await _unitOfWork.SaveChangesAsync();
+                    var updated = await _projectService.UpdateProjectAsync(id, project);
+                    if (!updated)
+                    {
+                        return NotFound();
+                    }
 
                     TempData["SuccessMessage"] = $"Project '{project.Title}' has been updated successfully.";
                     return RedirectToAction(nameof(Index));
@@ -83,117 +110,16 @@ namespace WebApp.Controllers
             }
 
             // If we got here, something failed, reload organizations and redisplay form
-            ViewBag.Organizations = GetMockOrganizations();
+            try
+            {
+                ViewBag.Organizations = await _organizationService.GetAllOrganizationsAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading organizations for project edit form");
+            }
+            
             return View(project);
-        }
-
-        // Mock data method
-        private List<Project> GetMockProjects()
-        {
-            return new List<Project>
-            {
-                new Project
-                {
-                    Id = 1,
-                    Title = "Beach Cleanup Initiative",
-                    Description = "Join us for a coastal cleanup to protect marine life and keep our beaches pristine. We'll provide all equipment and refreshments.",
-                    Location = "Baèvice Beach",
-                    City = "Split",
-                    StartDate = DateTime.UtcNow.AddDays(15),
-                    EndDate = DateTime.UtcNow.AddDays(15),
-                    ApplicationDeadline = DateTime.UtcNow.AddDays(7),
-                    MaxVolunteers = 30,
-                    CurrentVolunteers = 12,
-                    RequiredSkills = new List<string> { "Physical fitness", "Teamwork" },
-                    Categories = new List<string> { "Environment", "Community" },
-                    Status = ProjectStatus.Published,
-                    OrganizationId = 2,
-                    CreatedAt = DateTime.UtcNow.AddDays(-20)
-                },
-                new Project
-                {
-                    Id = 2,
-                    Title = "Food Distribution for Homeless",
-                    Description = "Help distribute meals and care packages to homeless individuals in the city center. Compassion and reliability are essential.",
-                    Location = "Main Square",
-                    City = "Zagreb",
-                    StartDate = DateTime.UtcNow.AddDays(5),
-                    EndDate = DateTime.UtcNow.AddDays(5),
-                    ApplicationDeadline = DateTime.UtcNow.AddDays(2),
-                    MaxVolunteers = 20,
-                    CurrentVolunteers = 18,
-                    RequiredSkills = new List<string> { "Communication", "Empathy" },
-                    Categories = new List<string> { "Social", "Community" },
-                    Status = ProjectStatus.Published,
-                    OrganizationId = 1,
-                    CreatedAt = DateTime.UtcNow.AddDays(-10)
-                },
-                new Project
-                {
-                    Id = 3,
-                    Title = "Animal Shelter Renovation",
-                    Description = "Assist in renovating shelter facilities including painting, repairs, and landscaping to create a better environment for our furry friends.",
-                    Location = "Shelter Grounds",
-                    City = "Osijek",
-                    StartDate = DateTime.UtcNow.AddDays(30),
-                    EndDate = DateTime.UtcNow.AddDays(32),
-                    ApplicationDeadline = DateTime.UtcNow.AddDays(20),
-                    MaxVolunteers = 15,
-                    CurrentVolunteers = 5,
-                    RequiredSkills = new List<string> { "Handyman skills", "Painting", "Physical fitness" },
-                    Categories = new List<string> { "Animals", "Construction" },
-                    Status = ProjectStatus.Published,
-                    OrganizationId = 3,
-                    CreatedAt = DateTime.UtcNow.AddDays(-5)
-                },
-                new Project
-                {
-                    Id = 4,
-                    Title = "Youth Mentorship Program",
-                    Description = "Mentor young students in STEM subjects and career development. Weekly commitment required for 3 months.",
-                    Location = "Community Center",
-                    City = "Rijeka",
-                    StartDate = DateTime.UtcNow.AddDays(45),
-                    EndDate = DateTime.UtcNow.AddDays(135),
-                    ApplicationDeadline = DateTime.UtcNow.AddDays(30),
-                    MaxVolunteers = 10,
-                    CurrentVolunteers = 3,
-                    RequiredSkills = new List<string> { "Teaching", "STEM knowledge", "Patience" },
-                    Categories = new List<string> { "Education", "Youth" },
-                    Status = ProjectStatus.Published,
-                    OrganizationId = 4,
-                    CreatedAt = DateTime.UtcNow.AddDays(-15)
-                },
-                new Project
-                {
-                    Id = 5,
-                    Title = "Tree Planting Campaign",
-                    Description = "Large-scale reforestation project. Help plant 1000 trees to combat climate change and restore natural habitats.",
-                    Location = "Medvednica Mountain",
-                    City = "Zagreb",
-                    StartDate = DateTime.UtcNow.AddDays(60),
-                    EndDate = DateTime.UtcNow.AddDays(62),
-                    ApplicationDeadline = DateTime.UtcNow.AddDays(45),
-                    MaxVolunteers = 50,
-                    CurrentVolunteers = 8,
-                    RequiredSkills = new List<string> { "Physical fitness", "Outdoor work" },
-                    Categories = new List<string> { "Environment", "Conservation" },
-                    Status = ProjectStatus.Draft,
-                    OrganizationId = 2,
-                    CreatedAt = DateTime.UtcNow.AddDays(-2)
-                }
-            };
-        }
-
-        private List<Organization> GetMockOrganizations()
-        {
-            return new List<Organization>
-            {
-                new Organization { Id = 1, OrganizationName = "Red Cross Croatia" },
-                new Organization { Id = 2, OrganizationName = "Green Action" },
-                new Organization { Id = 3, OrganizationName = "Animal Shelter Osijek" },
-                new Organization { Id = 4, OrganizationName = "Youth Development Foundation" }
-            };
         }
     }
 }
