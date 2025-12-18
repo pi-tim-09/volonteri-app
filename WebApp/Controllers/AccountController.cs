@@ -1,20 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Security.Cryptography;
-using System.Text;
 using WebApp.Interfaces;
 using WebApp.Models;
 using WebApp.ViewModels;
-using System.Threading.Tasks;
+using WebApp.Services;
 
 namespace WebApp.Controllers
 {
     public class AccountController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IPasswordHasher _passwordHasher;
 
-        public AccountController(IUnitOfWork unitOfWork)
+        public AccountController(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher)
         {
             _unitOfWork = unitOfWork;
+            _passwordHasher = passwordHasher;
         }
 
         [HttpGet]
@@ -36,7 +36,8 @@ namespace WebApp.Controllers
                 return View(model);
             }
 
-            var passwordHash = ComputeSha256Hash(model.Password);
+            // Use secure PBKDF2 password hashing instead of SHA256
+            var passwordHash = _passwordHasher.HashPassword(model.Password);
 
             var user = new Volunteer
             {
@@ -69,12 +70,12 @@ namespace WebApp.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            var passwordHash = ComputeSha256Hash(model.Password);
-
+            // Find user by email first
             var user = await _unitOfWork.Volunteers
-                .FirstOrDefaultAsync(u => u.Email == model.Email && u.PasswordHash == passwordHash && u.IsActive);
+                .FirstOrDefaultAsync(u => u.Email == model.Email && u.IsActive);
 
-            if (user == null)
+            // Verify password using secure password hasher
+            if (user == null || !_passwordHasher.VerifyPassword(user.PasswordHash, model.Password))
             {
                 ModelState.AddModelError(string.Empty, "Incorrect email or password.");
                 return View(model);
@@ -89,21 +90,8 @@ namespace WebApp.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Logout()
         {
-           
             HttpContext.Session.Clear();
             return RedirectToAction("Login", "Account");
-        }
-
-        private string ComputeSha256Hash(string rawData)
-        {
-            using (var sha256 = SHA256.Create())
-            {
-                var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(rawData));
-                var builder = new StringBuilder();
-                foreach (var b in bytes)
-                    builder.Append(b.ToString("x2"));
-                return builder.ToString();
-            }
         }
     }
 }
