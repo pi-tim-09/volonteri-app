@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebApp.Interfaces.Services;
 using WebApp.Models;
 
 namespace WebApp.Controllers
 {
+    [Authorize] 
     public class ProjectsController : Controller
     {
         private readonly IProjectService _projectService;
@@ -21,6 +23,7 @@ namespace WebApp.Controllers
         }
 
         // GET: Projects
+        [HttpGet]
         public async Task<IActionResult> Index(int? organizationId)
         {
             try
@@ -29,7 +32,6 @@ namespace WebApp.Controllers
 
                 if (organizationId.HasValue)
                 {
-                    // Use service layer - add this method to IProjectService
                     projects = await _projectService.GetProjectsByOrganizationAsync(organizationId.Value);
                     var organization = await _organizationService.GetOrganizationByIdAsync(organizationId.Value);
                     ViewBag.OrganizationName = organization?.OrganizationName;
@@ -50,6 +52,7 @@ namespace WebApp.Controllers
         }
 
         // GET: Projects/Edit/5
+        [HttpGet]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -66,7 +69,6 @@ namespace WebApp.Controllers
                     return NotFound();
                 }
 
-                // Load organizations for dropdown
                 ViewBag.Organizations = await _organizationService.GetAllOrganizationsAsync();
 
                 return View(project);
@@ -109,7 +111,6 @@ namespace WebApp.Controllers
                 }
             }
 
-            // If we got here, something failed, reload organizations and redisplay form
             try
             {
                 ViewBag.Organizations = await _organizationService.GetAllOrganizationsAsync();
@@ -118,7 +119,7 @@ namespace WebApp.Controllers
             {
                 _logger.LogError(ex, "Error loading organizations for project edit form");
             }
-            
+
             return View(project);
         }
     }

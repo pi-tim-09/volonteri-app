@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using WebApp.Interfaces.Services;
 using WebApp.Models;
 using WebApp.ViewModels;
 
 namespace WebApp.Controllers
 {
+    [Authorize] 
     public class UsersController : Controller
     {
         private readonly IUserService _userService;

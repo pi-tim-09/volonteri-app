@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WebApp.Interfaces.Services;
 using WebApp.Models;
 
 namespace WebApp.Controllers
 {
+    [Authorize]
     public class OrganizationsController : Controller
     {
         private readonly IOrganizationService _organizationService;
