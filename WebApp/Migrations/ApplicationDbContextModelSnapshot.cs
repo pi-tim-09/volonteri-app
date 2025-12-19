@@ -280,7 +280,7 @@ namespace WebApp.Migrations
                     b.HasOne("WebApp.Models.Volunteer", "Volunteer")
                         .WithMany("Applications")
                         .HasForeignKey("VolunteerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Project");
