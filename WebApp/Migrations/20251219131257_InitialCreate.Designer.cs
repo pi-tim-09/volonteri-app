@@ -12,7 +12,7 @@ using WebApp.Data;
 namespace WebApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251211074643_InitialCreate")]
+    [Migration("20251219131257_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -283,7 +283,7 @@ namespace WebApp.Migrations
                     b.HasOne("WebApp.Models.Volunteer", "Volunteer")
                         .WithMany("Applications")
                         .HasForeignKey("VolunteerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Project");

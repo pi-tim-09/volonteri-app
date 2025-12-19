@@ -160,7 +160,7 @@ namespace WebApp.Migrations
                         column: x => x.VolunteerId,
                         principalTable: "Volunteers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
