@@ -1,32 +1,36 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization; // Dodaj ovo!
-using WebApp.Interfaces;
-using WebApp.Models;
 using WebApp.ViewModels;
+using WebApp.Interfaces;
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Identity;
 using WebApp.Services;
+using WebApp.Models;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace WebApp.Controllers
 {
-    public class AccountController : Controller
+    public class AccountController : Controller 
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IConfiguration _configuration;
         private readonly IPasswordHasher _passwordHasher;
 
-        public AccountController(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher)
+        public AccountController(IUnitOfWork unitOfWork, IConfiguration configuration, IPasswordHasher passwordHasher)
         {
             _unitOfWork = unitOfWork;
+            _configuration = configuration;
             _passwordHasher = passwordHasher;
         }
 
         [HttpGet]
-        [AllowAnonymous]
         public IActionResult Register()
         {
             return View();
         }
 
         [HttpPost]
-        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterVM model)
         {
@@ -35,13 +39,11 @@ namespace WebApp.Controllers
 
             if (await _unitOfWork.Volunteers.AnyAsync(u => u.Email == model.Email))
             {
-                ModelState.AddModelError("Email", "Email is already registered.");
+                ModelState.AddModelError("Email", "Email je već registrovan.");
                 return View(model);
             }
 
-            // Use secure PBKDF2 password hashing instead of SHA256
             var passwordHash = _passwordHasher.HashPassword(model.Password);
-
             var user = new Volunteer
             {
                 Email = model.Email,
@@ -53,51 +55,56 @@ namespace WebApp.Controllers
                 CreatedAt = DateTime.UtcNow,
                 IsActive = true
             };
-
             await _unitOfWork.Volunteers.AddAsync(user);
             await _unitOfWork.SaveChangesAsync();
-
-            return RedirectToAction("Login", "Account");
+            // Možeš preusmjeriti na login ili prikazati poruku
+            return RedirectToAction("Login");
         }
 
         [HttpGet]
-        [AllowAnonymous]
         public IActionResult Login()
         {
             return View();
         }
 
         [HttpPost]
-        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginVM model)
         {
             if (!ModelState.IsValid)
                 return View(model);
 
-            // Find user by email first
-            var user = await _unitOfWork.Volunteers
-                .FirstOrDefaultAsync(u => u.Email == model.Email && u.IsActive);
-
-            // Verify password using secure password hasher
+            var user = await _unitOfWork.Volunteers.FirstOrDefaultAsync(u => u.Email == model.Email && u.IsActive);
             if (user == null || !_passwordHasher.VerifyPassword(user.PasswordHash, model.Password))
             {
-                ModelState.AddModelError(string.Empty, "Incorrect email or password.");
+                ModelState.AddModelError(string.Empty, "Pogrešan email ili lozinka.");
                 return View(model);
             }
 
-            HttpContext.Session.SetInt32("UserId", user.Id);
+            // Kreiraj claimove
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.Email),
+                new Claim(ClaimTypes.Role, user.Role.ToString())
+            };
+
+            var claimsIdentity = new ClaimsIdentity(claims, "MyCookieAuth");
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = true
+            };
+
+            await HttpContext.SignInAsync("MyCookieAuth", new ClaimsPrincipal(claimsIdentity), authProperties);
 
             return RedirectToAction("Index", "Home");
         }
 
         [HttpPost]
-        [Authorize]
         [ValidateAntiForgeryToken]
-        public IActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
-            HttpContext.Session.Clear();
-            return RedirectToAction("Login", "Account");
+            await HttpContext.SignOutAsync("MyCookieAuth");
+            return RedirectToAction("Login");
         }
     }
 }
