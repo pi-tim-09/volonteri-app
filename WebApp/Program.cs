@@ -9,6 +9,9 @@ using WebApp.Data;
 using WebApp.Interfaces;
 using WebApp.Interfaces.Services;
 using WebApp.Middleware;
+using WebApp.Patterns.Behavioral;
+using WebApp.Patterns.Creational;
+using WebApp.Patterns.Structural;
 using WebApp.Repositories;
 using WebApp.Services;
 
@@ -20,6 +23,38 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+builder.Services.AddScoped<IUserFactory, OrganizationFactory>();
+//factory provider that selects appropriate factory
+builder.Services.AddScoped<IUserFactoryProvider, UserFactoryProvider>();
+
+//Decorator
+builder.Services.AddScoped<INotificationService>(serviceProvider =>
+{
+    var baseService = new BaseNotificationService();
+    
+    var loggingDecorator = new LoggingNotificationDecorator(
+        baseService,
+        serviceProvider.GetRequiredService<ILogger<LoggingNotificationDecorator>>());
+    
+    var emailDecorator = new EmailNotificationDecorator(
+        loggingDecorator,
+        serviceProvider.GetRequiredService<ILogger<EmailNotificationDecorator>>());
+
+    var statisticsDecorator = new StatisticsNotificationDecorator(
+        emailDecorator,
+        serviceProvider.GetRequiredService<ILogger<StatisticsNotificationDecorator>>());
+    
+    return statisticsDecorator;
+});
+
+// State
+builder.Services.AddScoped<IApplicationStateFactory, ApplicationStateFactory>();
+builder.Services.AddScoped<IApplicationStateContextFactory, ApplicationStateContextFactory>();
+
+// ============================================================================
+// SERVICE REGISTRATION
+// ============================================================================
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
