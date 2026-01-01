@@ -21,34 +21,35 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+// ============================================================================
+// DESIGN PATTERNS REGISTRATION
+// ============================================================================
+
+// 1. FACTORY METHOD PATTERN (Creational)
+builder.Services.AddScoped<IUserFactory, VolunteerFactory>();
 builder.Services.AddScoped<IUserFactory, OrganizationFactory>();
-//factory provider that selects appropriate factory
+builder.Services.AddScoped<IUserFactory, AdminFactory>();
 builder.Services.AddScoped<IUserFactoryProvider, UserFactoryProvider>();
 
-//Decorator
+// 2. DECORATOR PATTERN (Structural)
 builder.Services.AddScoped<INotificationService>(serviceProvider =>
 {
     var baseService = new BaseNotificationService();
-    
     var loggingDecorator = new LoggingNotificationDecorator(
         baseService,
         serviceProvider.GetRequiredService<ILogger<LoggingNotificationDecorator>>());
-    
     var emailDecorator = new EmailNotificationDecorator(
         loggingDecorator,
         serviceProvider.GetRequiredService<ILogger<EmailNotificationDecorator>>());
-
     var statisticsDecorator = new StatisticsNotificationDecorator(
         emailDecorator,
         serviceProvider.GetRequiredService<ILogger<StatisticsNotificationDecorator>>());
-    
     return statisticsDecorator;
 });
 
-// State
+// 3. STATE PATTERN (Behavioral)
 builder.Services.AddScoped<IApplicationStateFactory, ApplicationStateFactory>();
 builder.Services.AddScoped<IApplicationStateContextFactory, ApplicationStateContextFactory>();
 
