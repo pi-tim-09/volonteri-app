@@ -1,6 +1,8 @@
 using WebApp.Interfaces;
 using WebApp.Interfaces.Services;
 using WebApp.Models;
+using WebApp.Patterns.Behavioral;
+using WebApp.Patterns.Structural;
 
 namespace WebApp.Services
 {
@@ -14,15 +16,21 @@ namespace WebApp.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IProjectService _projectService;
+        private readonly IApplicationStateContextFactory _stateContextFactory;
+        private readonly INotificationService _notificationService;
         private readonly ILogger<ApplicationService> _logger;
 
         public ApplicationService(
             IUnitOfWork unitOfWork,
             IProjectService projectService,
+            IApplicationStateContextFactory stateContextFactory,
+            INotificationService notificationService,
             ILogger<ApplicationService> logger)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             _projectService = projectService ?? throw new ArgumentNullException(nameof(projectService));
+            _stateContextFactory = stateContextFactory ?? throw new ArgumentNullException(nameof(stateContextFactory));
+            _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -48,6 +56,9 @@ namespace WebApp.Services
                 // Delegate to repository
                 var created = await _unitOfWork.Applications.AddAsync(application);
                 await _unitOfWork.SaveChangesAsync();
+
+                // Decorator Pattern
+                await _notificationService.NotifyApplicationSubmittedAsync(created);
 
                 _logger.LogInformation("Created new application for volunteer {VolunteerId} to project {ProjectId}",
                     volunteerId, projectId);
@@ -136,7 +147,7 @@ namespace WebApp.Services
             }
         }
 
-        // Business Logic Operations
+        // Business Logic Operations 
         public async Task<bool> ApproveApplicationAsync(int id, string? reviewNotes)
         {
             try
@@ -152,9 +163,15 @@ namespace WebApp.Services
                 if (application == null)
                     return false;
 
-                application.Status = ApplicationStatus.Accepted;
-                application.ReviewedAt = DateTime.UtcNow;
-                application.ReviewNotes = reviewNotes;
+                // State Pattern
+                var stateContext = _stateContextFactory.CreateContext(application);
+                var approved = await stateContext.ApproveAsync(reviewNotes);
+
+                if (!approved)
+                {
+                    _logger.LogWarning("State transition to Approved failed for application {ApplicationId}", id);
+                    return false;
+                }
 
                 _unitOfWork.Applications.Update(application);
 
@@ -162,6 +179,9 @@ namespace WebApp.Services
                 await _projectService.IncrementVolunteerCountAsync(application.ProjectId);
 
                 await _unitOfWork.SaveChangesAsync();
+
+                // Decorator Pattern
+                await _notificationService.NotifyApplicationApprovedAsync(application);
 
                 _logger.LogInformation("Approved application: {ApplicationId}", id);
                 return true;
@@ -188,12 +208,21 @@ namespace WebApp.Services
                 if (application == null)
                     return false;
 
-                application.Status = ApplicationStatus.Rejected;
-                application.ReviewedAt = DateTime.UtcNow;
-                application.ReviewNotes = reviewNotes;
+                // State Pattern
+                var stateContext = _stateContextFactory.CreateContext(application);
+                var rejected = await stateContext.RejectAsync(reviewNotes);
+
+                if (!rejected)
+                {
+                    _logger.LogWarning("State transition to Rejected failed for application {ApplicationId}", id);
+                    return false;
+                }
 
                 _unitOfWork.Applications.Update(application);
                 await _unitOfWork.SaveChangesAsync();
+
+                // Decorator Pattern
+                await _notificationService.NotifyApplicationRejectedAsync(application);
 
                 _logger.LogInformation("Rejected application: {ApplicationId}", id);
                 return true;
@@ -215,7 +244,16 @@ namespace WebApp.Services
                     return false;
 
                 var previousStatus = application.Status;
-                application.Status = ApplicationStatus.Withdrawn;
+
+                // State Pattern
+                var stateContext = _stateContextFactory.CreateContext(application);
+                var withdrawn = await stateContext.WithdrawAsync();
+
+                if (!withdrawn)
+                {
+                    _logger.LogWarning("State transition to Withdrawn failed for application {ApplicationId}", id);
+                    return false;
+                }
 
                 _unitOfWork.Applications.Update(application);
 
@@ -226,6 +264,9 @@ namespace WebApp.Services
                 }
 
                 await _unitOfWork.SaveChangesAsync();
+
+                // Decorator Pattern
+                await _notificationService.NotifyApplicationWithdrawnAsync(application);
 
                 _logger.LogInformation("Withdrew application: {ApplicationId}", id);
                 return true;
@@ -274,10 +315,12 @@ namespace WebApp.Services
                 if (application == null)
                     return false;
 
-                // Business rules for approval
-                if (application.Status != ApplicationStatus.Pending)
+                // State Pattern
+                var stateContext = _stateContextFactory.CreateContext(application);
+                if (!stateContext.CanApprove())
                 {
-                    _logger.LogWarning("Cannot approve application {ApplicationId} - not in pending status", id);
+                    _logger.LogWarning("Cannot approve application {ApplicationId} - state {Status} does not allow approval", 
+                        id, application.Status);
                     return false;
                 }
 
@@ -307,8 +350,9 @@ namespace WebApp.Services
                 if (application == null)
                     return false;
 
-                // Business rule: can only reject pending applications
-                return application.Status == ApplicationStatus.Pending;
+                // State Pattern
+                var stateContext = _stateContextFactory.CreateContext(application);
+                return stateContext.CanReject();
             }
             catch (Exception ex)
             {
@@ -330,9 +374,9 @@ namespace WebApp.Services
                 if (application.VolunteerId != volunteerId)
                     return false;
 
-                // Can only withdraw pending or accepted applications
-                return application.Status == ApplicationStatus.Pending ||
-                       application.Status == ApplicationStatus.Accepted;
+                // State Pattern
+                var stateContext = _stateContextFactory.CreateContext(application);
+                return stateContext.CanWithdraw();
             }
             catch (Exception ex)
             {

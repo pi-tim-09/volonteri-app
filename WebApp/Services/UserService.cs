@@ -1,6 +1,7 @@
 using WebApp.Interfaces;
 using WebApp.Interfaces.Services;
 using WebApp.Models;
+using WebApp.Patterns.Creational;
 using WebApp.ViewModels;
 
 namespace WebApp.Services
@@ -12,11 +13,16 @@ namespace WebApp.Services
     public class UserService : IUserService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IUserFactoryProvider _userFactoryProvider;
         private readonly ILogger<UserService> _logger;
 
-        public UserService(IUnitOfWork unitOfWork, ILogger<UserService> logger)
+        public UserService(
+            IUnitOfWork unitOfWork,
+            IUserFactoryProvider userFactoryProvider,
+            ILogger<UserService> logger)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _userFactoryProvider = userFactoryProvider ?? throw new ArgumentNullException(nameof(userFactoryProvider));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -31,57 +37,21 @@ namespace WebApp.Services
                     throw new InvalidOperationException($"Email {userVm.Email} is already registered.");
                 }
 
-                User newUser = userVm.Role switch
-                {
-                    UserRole.Volunteer => new Volunteer
-                    {
-                        Email = userVm.Email,
-                        FirstName = userVm.FirstName,
-                        LastName = userVm.LastName,
-                        PhoneNumber = userVm.PhoneNumber,
-                        Role = userVm.Role,
-                        IsActive = userVm.IsActive,
-                        CreatedAt = DateTime.UtcNow
-                    },
-                    UserRole.Organization => new Organization
-                    {
-                        Email = userVm.Email,
-                        FirstName = userVm.FirstName,
-                        LastName = userVm.LastName,
-                        PhoneNumber = userVm.PhoneNumber,
-                        Role = userVm.Role,
-                        IsActive = userVm.IsActive,
-                        CreatedAt = DateTime.UtcNow,
-                        IsVerified = false // Business rule: new orgs are not verified
-                    },
-                    UserRole.Admin => new Admin
-                    {
-                        Email = userVm.Email,
-                        FirstName = userVm.FirstName,
-                        LastName = userVm.LastName,
-                        PhoneNumber = userVm.PhoneNumber,
-                        Role = userVm.Role,
-                        IsActive = userVm.IsActive,
-                        CreatedAt = DateTime.UtcNow
-                    },
-                    _ => throw new ArgumentException("Invalid user role")
-                };
+                // Factory Method Pattern to create the appropriate user type
+                // replaces switch statement
+                User newUser = _userFactoryProvider.CreateUser(
+                    userVm.Role,
+                    userVm.Email,
+                    userVm.FirstName,
+                    userVm.LastName,
+                    userVm.PhoneNumber);
 
-                // Delegate to repository
-                switch (newUser.Role)
-                {
-                    case UserRole.Volunteer:
-                        await _unitOfWork.Volunteers.AddAsync((Volunteer)newUser);
-                        break;
-                    case UserRole.Organization:
-                        await _unitOfWork.Organizations.AddAsync((Organization)newUser);
-                        break;
-                    case UserRole.Admin:
-                        await _unitOfWork.Admins.AddAsync((Admin)newUser);
-                        break;
-                }
+                newUser.IsActive = userVm.IsActive;
 
+                // Delegate to appropriate repository based on role
+                await AddUserToRepositoryAsync(newUser);
                 await _unitOfWork.SaveChangesAsync();
+                
                 _logger.LogInformation("Created new user: {Email} with role {Role}", newUser.Email, newUser.Role);
                 return newUser;
             }
@@ -89,6 +59,24 @@ namespace WebApp.Services
             {
                 _logger.LogError(ex, "Error creating user: {Email}", userVm.Email);
                 throw;
+            }
+        }
+
+        private async Task AddUserToRepositoryAsync(User user)
+        {
+            switch (user.Role)
+            {
+                case UserRole.Volunteer:
+                    await _unitOfWork.Volunteers.AddAsync((Volunteer)user);
+                    break;
+                case UserRole.Organization:
+                    await _unitOfWork.Organizations.AddAsync((Organization)user);
+                    break;
+                case UserRole.Admin:
+                    await _unitOfWork.Admins.AddAsync((Admin)user);
+                    break;
+                default:
+                    throw new ArgumentException($"Unknown user role: {user.Role}");
             }
         }
 
