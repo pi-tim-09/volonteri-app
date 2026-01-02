@@ -23,17 +23,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-// ============================================================================
-// DESIGN PATTERNS REGISTRATION
-// ============================================================================
-
-// 1. FACTORY METHOD PATTERN (Creational)
 builder.Services.AddScoped<IUserFactory, VolunteerFactory>();
 builder.Services.AddScoped<IUserFactory, OrganizationFactory>();
 builder.Services.AddScoped<IUserFactory, AdminFactory>();
 builder.Services.AddScoped<IUserFactoryProvider, UserFactoryProvider>();
 
-// 2. DECORATOR PATTERN (Structural)
+
 builder.Services.AddScoped<INotificationService>(serviceProvider =>
 {
     var baseService = new BaseNotificationService();
@@ -53,9 +48,7 @@ builder.Services.AddScoped<INotificationService>(serviceProvider =>
 builder.Services.AddScoped<IApplicationStateFactory, ApplicationStateFactory>();
 builder.Services.AddScoped<IApplicationStateContextFactory, ApplicationStateContextFactory>();
 
-// ============================================================================
-// SERVICE REGISTRATION
-// ============================================================================
+
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();

@@ -5,7 +5,7 @@ namespace WebApp.Patterns.Structural
     public interface INotificationService
     {
         Task NotifyApplicationApprovedAsync(Application application);
-        Task NotifyApplicationRejectedAsync(Application application);      
+        Task NotifyApplicationRejectedAsync(Application application);
         Task NotifyApplicationSubmittedAsync(Application application);
         Task NotifyApplicationWithdrawnAsync(Application application);
     }
@@ -37,10 +37,7 @@ namespace WebApp.Patterns.Structural
         }
     }
 
-    /// <summary>
-    /// Abstract decorator base class
-    /// All concrete decorators inherit from this
-    /// </summary>
+  
     public abstract class NotificationDecorator : INotificationService
     {
         protected readonly INotificationService _wrappedService;
@@ -71,16 +68,14 @@ namespace WebApp.Patterns.Structural
         }
     }
 
-    /// <summary>
-    /// Logging Decorator - adds logging behavior to notifications
-    /// </summary>
+    
     public class LoggingNotificationDecorator : NotificationDecorator
     {
         private readonly ILogger<LoggingNotificationDecorator> _logger;
 
         public LoggingNotificationDecorator(
             INotificationService wrappedService,
-            ILogger<LoggingNotificationDecorator> logger) 
+            ILogger<LoggingNotificationDecorator> logger)
             : base(wrappedService)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -91,7 +86,7 @@ namespace WebApp.Patterns.Structural
             _logger.LogInformation(
                 "[NOTIFICATION] Application #{ApplicationId} APPROVED - Volunteer: {VolunteerId}, Project: {ProjectId}",
                 application.Id, application.VolunteerId, application.ProjectId);
-            
+
             await base.NotifyApplicationApprovedAsync(application);
         }
 
@@ -100,7 +95,7 @@ namespace WebApp.Patterns.Structural
             _logger.LogInformation(
                 "[NOTIFICATION] Application #{ApplicationId} REJECTED - Volunteer: {VolunteerId}, Project: {ProjectId}",
                 application.Id, application.VolunteerId, application.ProjectId);
-            
+
             await base.NotifyApplicationRejectedAsync(application);
         }
 
@@ -109,7 +104,7 @@ namespace WebApp.Patterns.Structural
             _logger.LogInformation(
                 "[NOTIFICATION] Application #{ApplicationId} SUBMITTED - Volunteer: {VolunteerId}, Project: {ProjectId}",
                 application.Id, application.VolunteerId, application.ProjectId);
-            
+
             await base.NotifyApplicationSubmittedAsync(application);
         }
 
@@ -118,22 +113,19 @@ namespace WebApp.Patterns.Structural
             _logger.LogInformation(
                 "[NOTIFICATION] Application #{ApplicationId} WITHDRAWN - Volunteer: {VolunteerId}, Project: {ProjectId}",
                 application.Id, application.VolunteerId, application.ProjectId);
-            
+
             await base.NotifyApplicationWithdrawnAsync(application);
         }
     }
 
-    /// <summary>
-    /// Email Decorator - adds email notification behavior
-    /// In a real scenario, this would integrate with an email service like SendGrid, SMTP, etc.
-    /// </summary>
+   
     public class EmailNotificationDecorator : NotificationDecorator
     {
         private readonly ILogger<EmailNotificationDecorator> _logger;
 
         public EmailNotificationDecorator(
             INotificationService wrappedService,
-            ILogger<EmailNotificationDecorator> logger) 
+            ILogger<EmailNotificationDecorator> logger)
             : base(wrappedService)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -141,7 +133,7 @@ namespace WebApp.Patterns.Structural
 
         public override async Task NotifyApplicationApprovedAsync(Application application)
         {
-            // Simulate sending email (in production, integrate with email service)
+            
             await SendEmailAsync(
                 application.Volunteer?.Email ?? "unknown@email.com",
                 "Application Approved!",
@@ -162,13 +154,13 @@ namespace WebApp.Patterns.Structural
 
         public override async Task NotifyApplicationSubmittedAsync(Application application)
         {
-            // Notify volunteer about submission
+            
             await SendEmailAsync(
                 application.Volunteer?.Email ?? "unknown@email.com",
                 "Application Received",
                 $"Thank you for applying! Your application #{application.Id} has been submitted for review.");
 
-            // Notify organization about new application
+            
             await SendEmailAsync(
                 application.Project?.Organization?.Email ?? "unknown@email.com",
                 "New Volunteer Application",
@@ -189,20 +181,17 @@ namespace WebApp.Patterns.Structural
 
         private Task SendEmailAsync(string to, string subject, string body)
         {
-            // Simulate email sending - in production, use actual email service
+            
             _logger.LogDebug(
                 "[EMAIL] To: {To}, Subject: {Subject}, Body: {Body}",
                 to, subject, body);
+
             
-            // Simulate async operation
             return Task.CompletedTask;
         }
     }
 
-    /// <summary>
-    /// Statistics Decorator - tracks notification statistics
-    /// Demonstrates how decorators can add completely different behaviors
-    /// </summary>
+   
     public class StatisticsNotificationDecorator : NotificationDecorator
     {
         private readonly ILogger<StatisticsNotificationDecorator> _logger;
@@ -247,9 +236,7 @@ namespace WebApp.Patterns.Structural
             await base.NotifyApplicationWithdrawnAsync(application);
         }
 
-        /// <summary>
-        /// Gets current statistics - useful for monitoring
-        /// </summary>
+      
         public static (int Approved, int Rejected, int Submitted, int Withdrawn) GetStatistics()
         {
             return (_approvedCount, _rejectedCount, _submittedCount, _withdrawnCount);
