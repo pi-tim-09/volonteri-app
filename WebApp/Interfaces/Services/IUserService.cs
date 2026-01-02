@@ -28,5 +28,10 @@ namespace WebApp.Interfaces.Services
         // Validation & Business Rules
         Task<bool> EmailExistsAsync(string email);
         Task<bool> CanDeleteUserAsync(int id);
+
+        // Volunteer-Specific Methods (Design Patterns Demo)
+        Task<string> GetEnrichedVolunteerSummaryAsync(int volunteerId);
+        Task<bool> UpdateVolunteerSkillsAsync(int volunteerId, List<string> newSkills);
+        Task<bool> RecordVolunteerProjectCompletionAsync(int volunteerId, int projectId, int hoursLogged);
     }
 }

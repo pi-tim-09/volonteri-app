@@ -48,6 +48,32 @@ builder.Services.AddScoped<INotificationService>(serviceProvider =>
 builder.Services.AddScoped<IApplicationStateFactory, ApplicationStateFactory>();
 builder.Services.AddScoped<IApplicationStateContextFactory, ApplicationStateContextFactory>();
 
+// ============================================================================
+// VOLUNTEER-SPECIFIC DESIGN PATTERNS (for volunteer module only)
+// ============================================================================
+
+// 4. VOLUNTEER PROFILE DECORATOR PATTERN (Structural)
+builder.Services.AddScoped<IVolunteerProfileService>(serviceProvider =>
+{
+    var baseService = new BasicVolunteerProfileService();
+    var validatingDecorator = new ValidatingVolunteerProfileDecorator(
+        baseService,
+        serviceProvider.GetRequiredService<ILogger<ValidatingVolunteerProfileDecorator>>());
+    var loggingDecorator = new LoggingVolunteerProfileDecorator(
+        validatingDecorator,
+        serviceProvider.GetRequiredService<ILogger<LoggingVolunteerProfileDecorator>>());
+    var enrichedDecorator = new EnrichedVolunteerProfileDecorator(
+        loggingDecorator,
+        serviceProvider.GetRequiredService<ILogger<EnrichedVolunteerProfileDecorator>>());
+    return enrichedDecorator;
+});
+
+// 5. VOLUNTEER OBSERVER PATTERN (Behavioral)
+builder.Services.AddSingleton<IVolunteerEventPublisher, VolunteerEventPublisher>();
+builder.Services.AddSingleton<IVolunteerObserver, LoggingVolunteerObserver>();
+builder.Services.AddSingleton<IVolunteerObserver, StatisticsVolunteerObserver>();
+builder.Services.AddSingleton<IVolunteerObserver, NotificationVolunteerObserver>();
+
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IOrganizationService, OrganizationService>();
