@@ -15,22 +15,28 @@ namespace WebApp.Services
         private readonly INotificationService _notificationService;
         private readonly IApplicationStateContextFactory _stateContextFactory;
         private readonly ILogger<UserService> _logger;
+        private readonly IVolunteerProfileService _volunteerProfileService;
+        private readonly IVolunteerEventPublisher _volunteerEventPublisher;
 
         public UserService(
             IUnitOfWork unitOfWork,
             IUserFactoryProvider userFactoryProvider,
             INotificationService notificationService,
             IApplicationStateContextFactory stateContextFactory,
-            ILogger<UserService> logger)
+            ILogger<UserService> logger,
+            IVolunteerProfileService volunteerProfileService,
+            IVolunteerEventPublisher volunteerEventPublisher)
         {
             _unitOfWork = unitOfWork;
             _userFactoryProvider = userFactoryProvider;
             _notificationService = notificationService;
             _stateContextFactory = stateContextFactory;
             _logger = logger;
+            _volunteerProfileService = volunteerProfileService;
+            _volunteerEventPublisher = volunteerEventPublisher;
         }
 
-       
+       //Factory
         public async Task<User> CreateUserAsync(UserVM userVm)
         {
             if (await EmailExistsAsync(userVm.Email))
@@ -46,7 +52,13 @@ namespace WebApp.Services
             user.IsActive = userVm.IsActive;
 
             if (user is Volunteer v)
+            {
                 await _unitOfWork.Volunteers.AddAsync(v);
+                await _unitOfWork.SaveChangesAsync();
+                
+                // Observer Pattern: Notify observers about new volunteer registration
+                await _volunteerEventPublisher.NotifyVolunteerRegisteredAsync(v);
+            }
             else if (user is Organization o)
                 await _unitOfWork.Organizations.AddAsync(o);
             else if (user is Admin a)
@@ -163,7 +175,7 @@ namespace WebApp.Services
 
             await _unitOfWork.Applications.AddAsync(application);
             await _unitOfWork.SaveChangesAsync();
-
+            //Decorator
             await _notificationService.NotifyApplicationSubmittedAsync(application);
 
             return application;
@@ -171,7 +183,7 @@ namespace WebApp.Services
 
 
         public async Task<bool> ApproveApplicationAsync(Application application, string? notes)
-        {
+        {//State
             var context = _stateContextFactory.CreateContext(application);
 
             if (!context.CanApprove())
@@ -227,6 +239,51 @@ namespace WebApp.Services
             if (user is Volunteer v) _unitOfWork.Volunteers.Remove(v);
             else if (user is Organization o) _unitOfWork.Organizations.Remove(o);
             else if (user is Admin a) _unitOfWork.Admins.Remove(a);
+        }
+
+        
+        public async Task<string> GetEnrichedVolunteerSummaryAsync(int volunteerId)
+        {
+            var volunteer = await _unitOfWork.Volunteers.GetByIdAsync(volunteerId);
+            if (volunteer == null)
+                throw new InvalidOperationException($"Volunteer {volunteerId} not found");
+
+            // Uses Decorator pattern 
+            return await _volunteerProfileService.FormatVolunteerSummaryAsync(volunteer);
+        }
+
+        
+        public async Task<bool> UpdateVolunteerSkillsAsync(int volunteerId, List<string> newSkills)
+        {
+            var volunteer = await _unitOfWork.Volunteers.GetByIdAsync(volunteerId);
+            if (volunteer == null)
+                return false;
+
+            volunteer.Skills = newSkills;
+            _unitOfWork.Volunteers.Update(volunteer);
+            await _unitOfWork.SaveChangesAsync();
+
+            // Observer Pattern: Notify all observers about skill update
+            await _volunteerEventPublisher.NotifyVolunteerSkillsUpdatedAsync(volunteer, newSkills);
+
+            return true;
+        }
+
+       
+        public async Task<bool> RecordVolunteerProjectCompletionAsync(int volunteerId, int projectId, int hoursLogged)
+        {
+            var volunteer = await _unitOfWork.Volunteers.GetByIdAsync(volunteerId);
+            if (volunteer == null)
+                return false;
+
+            volunteer.VolunteerHours += hoursLogged;
+            _unitOfWork.Volunteers.Update(volunteer);
+            await _unitOfWork.SaveChangesAsync();
+
+            // Observer Pattern: Notify all observers about project completion
+            await _volunteerEventPublisher.NotifyVolunteerProjectCompletedAsync(volunteer, projectId, hoursLogged);
+
+            return true;
         }
     }
 }
