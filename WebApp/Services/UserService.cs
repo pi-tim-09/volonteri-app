@@ -1,186 +1,103 @@
 using WebApp.Interfaces;
 using WebApp.Interfaces.Services;
 using WebApp.Models;
+using WebApp.Patterns.Behavioral;
 using WebApp.Patterns.Creational;
+using WebApp.Patterns.Structural;
 using WebApp.ViewModels;
 
 namespace WebApp.Services
 {
-    /// <summary>
-    /// Service implementation for User-related business logic
-    /// Follows Single Responsibility Principle - handles only user-related business operations
-    /// </summary>
     public class UserService : IUserService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserFactoryProvider _userFactoryProvider;
+        private readonly INotificationService _notificationService;
+        private readonly IApplicationStateContextFactory _stateContextFactory;
         private readonly ILogger<UserService> _logger;
 
         public UserService(
             IUnitOfWork unitOfWork,
             IUserFactoryProvider userFactoryProvider,
+            INotificationService notificationService,
+            IApplicationStateContextFactory stateContextFactory,
             ILogger<UserService> logger)
         {
-            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
-            _userFactoryProvider = userFactoryProvider ?? throw new ArgumentNullException(nameof(userFactoryProvider));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _unitOfWork = unitOfWork;
+            _userFactoryProvider = userFactoryProvider;
+            _notificationService = notificationService;
+            _stateContextFactory = stateContextFactory;
+            _logger = logger;
         }
 
-        // CRUD Operations with Business Logic
+       
         public async Task<User> CreateUserAsync(UserVM userVm)
         {
-            try
-            {
-                // Business validation
-                if (await EmailExistsAsync(userVm.Email))
-                {
-                    throw new InvalidOperationException($"Email {userVm.Email} is already registered.");
-                }
+            if (await EmailExistsAsync(userVm.Email))
+                throw new InvalidOperationException("Email already exists.");
 
-                // Factory Method Pattern to create the appropriate user type
-                // replaces switch statement
-                User newUser = _userFactoryProvider.CreateUser(
-                    userVm.Role,
-                    userVm.Email,
-                    userVm.FirstName,
-                    userVm.LastName,
-                    userVm.PhoneNumber);
+            User user = _userFactoryProvider.CreateUser(
+                userVm.Role,
+                userVm.Email,
+                userVm.FirstName,
+                userVm.LastName,
+                userVm.PhoneNumber);
 
-                newUser.IsActive = userVm.IsActive;
+            user.IsActive = userVm.IsActive;
 
-                // Delegate to appropriate repository based on role
-                await AddUserToRepositoryAsync(newUser);
-                await _unitOfWork.SaveChangesAsync();
-                
-                _logger.LogInformation("Created new user: {Email} with role {Role}", newUser.Email, newUser.Role);
-                return newUser;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating user: {Email}", userVm.Email);
-                throw;
-            }
+            if (user is Volunteer v)
+                await _unitOfWork.Volunteers.AddAsync(v);
+            else if (user is Organization o)
+                await _unitOfWork.Organizations.AddAsync(o);
+            else if (user is Admin a)
+                await _unitOfWork.Admins.AddAsync(a);
+
+            await _unitOfWork.SaveChangesAsync();
+            return user;
         }
 
-        private async Task AddUserToRepositoryAsync(User user)
-        {
-            switch (user.Role)
-            {
-                case UserRole.Volunteer:
-                    await _unitOfWork.Volunteers.AddAsync((Volunteer)user);
-                    break;
-                case UserRole.Organization:
-                    await _unitOfWork.Organizations.AddAsync((Organization)user);
-                    break;
-                case UserRole.Admin:
-                    await _unitOfWork.Admins.AddAsync((Admin)user);
-                    break;
-                default:
-                    throw new ArgumentException($"Unknown user role: {user.Role}");
-            }
-        }
-
+     
         public async Task<bool> UpdateUserAsync(int id, UserVM userVm)
         {
-            try
-            {
-                var user = await GetUserByIdAsync(id);
-                if (user == null)
-                    return false;
+            var user = await GetUserByIdAsync(id);
+            if (user == null) return false;
 
-                // Business logic: Update user properties
-                user.Email = userVm.Email;
-                user.FirstName = userVm.FirstName;
-                user.LastName = userVm.LastName;
-                user.PhoneNumber = userVm.PhoneNumber;
-                user.IsActive = userVm.IsActive;
+            user.Email = userVm.Email;
+            user.FirstName = userVm.FirstName;
+            user.LastName = userVm.LastName;
+            user.PhoneNumber = userVm.PhoneNumber;
+            user.IsActive = userVm.IsActive;
 
-                // Delegate to repository
-                switch (user.Role)
-                {
-                    case UserRole.Volunteer:
-                        _unitOfWork.Volunteers.Update((Volunteer)user);
-                        break;
-                    case UserRole.Organization:
-                        _unitOfWork.Organizations.Update((Organization)user);
-                        break;
-                    case UserRole.Admin:
-                        _unitOfWork.Admins.Update((Admin)user);
-                        break;
-                }
-
-                await _unitOfWork.SaveChangesAsync();
-                _logger.LogInformation("Updated user: {UserId}", id);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error updating user: {UserId}", id);
-                throw;
-            }
+            UpdateUser(user);
+            await _unitOfWork.SaveChangesAsync();
+            return true;
         }
 
         public async Task<bool> DeleteUserAsync(int id)
         {
-            try
-            {
-                // Business validation
-                if (!await CanDeleteUserAsync(id))
-                {
-                    throw new InvalidOperationException("User cannot be deleted at this time.");
-                }
+            var user = await GetUserByIdAsync(id);
+            if (user == null) return false;
 
-                var user = await GetUserByIdAsync(id);
-                if (user == null)
-                    return false;
-
-                // Delegate to repository
-                switch (user.Role)
-                {
-                    case UserRole.Volunteer:
-                        _unitOfWork.Volunteers.Remove((Volunteer)user);
-                        break;
-                    case UserRole.Organization:
-                        _unitOfWork.Organizations.Remove((Organization)user);
-                        break;
-                    case UserRole.Admin:
-                        _unitOfWork.Admins.Remove((Admin)user);
-                        break;
-                }
-
-                await _unitOfWork.SaveChangesAsync();
-                _logger.LogInformation("Deleted user: {UserId}", id);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error deleting user: {UserId}", id);
-                throw;
-            }
+            RemoveUser(user);
+            await _unitOfWork.SaveChangesAsync();
+            return true;
         }
 
         public async Task<User?> GetUserByIdAsync(int id)
         {
-            try
-            {
-                // Delegate to repositories
-                var volunteer = await _unitOfWork.Volunteers.GetByIdAsync(id);
-                if (volunteer != null) return volunteer;
+            var volunteer = await _unitOfWork.Volunteers.GetByIdAsync(id);
+            if (volunteer != null)
+                return volunteer;
 
-                var organization = await _unitOfWork.Organizations.GetByIdAsync(id);
-                if (organization != null) return organization;
+            var organization = await _unitOfWork.Organizations.GetByIdAsync(id);
+            if (organization != null)
+                return organization;
 
-                var admin = await _unitOfWork.Admins.GetByIdAsync(id);
-                return admin;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving user by ID: {UserId}", id);
-                throw;
-            }
+            var admin = await _unitOfWork.Admins.GetByIdAsync(id);
+            return admin;
         }
 
-        // Business Logic Operations
+
         public async Task<UserFilterViewModel> GetFilteredUsersAsync(
             string? searchTerm,
             UserRole? roleFilter,
@@ -188,185 +105,128 @@ namespace WebApp.Services
             int pageNumber,
             int pageSize)
         {
-            try
+            var users = (await _unitOfWork.Volunteers.GetAllAsync()).Cast<User>()
+                .Concat(await _unitOfWork.Organizations.GetAllAsync())
+                .Concat(await _unitOfWork.Admins.GetAllAsync())
+                .ToList();
+
+            return new UserFilterViewModel
             {
-                // Delegate to repositories to get all users
-                var volunteers = await _unitOfWork.Volunteers.GetAllAsync();
-                var organizations = await _unitOfWork.Organizations.GetAllAsync();
-                var admins = await _unitOfWork.Admins.GetAllAsync();
-
-                var allUsers = volunteers.Cast<User>()
-                    .Concat(organizations.Cast<User>())
-                    .Concat(admins.Cast<User>())
-                    .ToList();
-
-                // Business logic: Apply filters
-                IEnumerable<User> filteredUsers = allUsers;
-
-                if (!string.IsNullOrWhiteSpace(searchTerm))
-                {
-                    searchTerm = searchTerm.ToLower();
-                    filteredUsers = filteredUsers.Where(u =>
-                        u.FirstName.ToLower().Contains(searchTerm) ||
-                        u.LastName.ToLower().Contains(searchTerm) ||
-                        u.Email.ToLower().Contains(searchTerm) ||
-                        u.PhoneNumber.Contains(searchTerm) ||
-                        (u is Organization org && org.OrganizationName.ToLower().Contains(searchTerm))
-                    );
-                }
-
-                if (roleFilter.HasValue)
-                {
-                    filteredUsers = filteredUsers.Where(u => u.Role == roleFilter.Value);
-                }
-
-                if (isActiveFilter.HasValue)
-                {
-                    filteredUsers = filteredUsers.Where(u => u.IsActive == isActiveFilter.Value);
-                }
-
-                var filteredList = filteredUsers.ToList();
-
-                // Business logic: Calculate pagination
-                var totalUsers = filteredList.Count;
-                var totalPages = (int)Math.Ceiling(totalUsers / (double)pageSize);
-                pageNumber = Math.Max(1, Math.Min(pageNumber, totalPages == 0 ? 1 : totalPages));
-
-                var pagedUsers = filteredList
-                    .Skip((pageNumber - 1) * pageSize)
-                    .Take(pageSize)
-                    .ToList();
-
-                return new UserFilterViewModel
-                {
-                    Users = pagedUsers,
-                    SearchTerm = searchTerm,
-                    RoleFilter = roleFilter,
-                    IsActiveFilter = isActiveFilter,
-                    PageNumber = pageNumber,
-                    PageSize = pageSize,
-                    TotalPages = totalPages,
-                    TotalUsers = totalUsers,
-                    TotalAdmins = allUsers.Count(u => u.Role == UserRole.Admin),
-                    TotalOrganizations = allUsers.Count(u => u.Role == UserRole.Organization),
-                    TotalVolunteers = allUsers.Count(u => u.Role == UserRole.Volunteer)
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error filtering users");
-                throw;
-            }
+                Users = users,
+                TotalUsers = users.Count
+            };
         }
 
         public async Task<bool> ActivateUserAsync(int id)
         {
-            try
-            {
-                var user = await GetUserByIdAsync(id);
-                if (user == null)
-                    return false;
+            var user = await GetUserByIdAsync(id);
+            if (user == null) return false;
 
-                user.IsActive = true;
-
-                switch (user.Role)
-                {
-                    case UserRole.Volunteer:
-                        _unitOfWork.Volunteers.Update((Volunteer)user);
-                        break;
-                    case UserRole.Organization:
-                        _unitOfWork.Organizations.Update((Organization)user);
-                        break;
-                    case UserRole.Admin:
-                        _unitOfWork.Admins.Update((Admin)user);
-                        break;
-                }
-
-                await _unitOfWork.SaveChangesAsync();
-                _logger.LogInformation("Activated user: {UserId}", id);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error activating user: {UserId}", id);
-                throw;
-            }
+            user.IsActive = true;
+            UpdateUser(user);
+            await _unitOfWork.SaveChangesAsync();
+            return true;
         }
 
         public async Task<bool> DeactivateUserAsync(int id)
         {
-            try
-            {
-                var user = await GetUserByIdAsync(id);
-                if (user == null)
-                    return false;
+            var user = await GetUserByIdAsync(id);
+            if (user == null) return false;
 
-                user.IsActive = false;
-
-                switch (user.Role)
-                {
-                    case UserRole.Volunteer:
-                        _unitOfWork.Volunteers.Update((Volunteer)user);
-                        break;
-                    case UserRole.Organization:
-                        _unitOfWork.Organizations.Update((Organization)user);
-                        break;
-                    case UserRole.Admin:
-                        _unitOfWork.Admins.Update((Admin)user);
-                        break;
-                }
-
-                await _unitOfWork.SaveChangesAsync();
-                _logger.LogInformation("Deactivated user: {UserId}", id);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error deactivating user: {UserId}", id);
-                throw;
-            }
+            user.IsActive = false;
+            UpdateUser(user);
+            await _unitOfWork.SaveChangesAsync();
+            return true;
         }
 
-        // Validation & Business Rules
         public async Task<bool> EmailExistsAsync(string email)
         {
-            try
-            {
-                // Delegate to repositories
-                var volunteerExists = await _unitOfWork.Volunteers.AnyAsync(v => v.Email == email);
-                if (volunteerExists) return true;
-
-                var organizationExists = await _unitOfWork.Organizations.AnyAsync(o => o.Email == email);
-                if (organizationExists) return true;
-
-                var adminExists = await _unitOfWork.Admins.AnyAsync(a => a.Email == email);
-                return adminExists;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error checking if email exists: {Email}", email);
-                throw;
-            }
+            return await _unitOfWork.Volunteers.AnyAsync(u => u.Email == email)
+                || await _unitOfWork.Organizations.AnyAsync(u => u.Email == email)
+                || await _unitOfWork.Admins.AnyAsync(u => u.Email == email);
         }
 
         public async Task<bool> CanDeleteUserAsync(int id)
         {
-            try
-            {
-                var user = await GetUserByIdAsync(id);
-                if (user == null)
-                    return false;
+            return await GetUserByIdAsync(id) != null;
+        }
 
-                // Business rule: Add specific deletion rules here
-                // For example: Can't delete users with active applications, etc.
-                
-                return true;
-            }
-            catch (Exception ex)
+
+        public async Task<Application> SubmitApplicationAsync(int volunteerId, int projectId)
+        {
+            var application = new Application
             {
-                _logger.LogError(ex, "Error checking if user can be deleted: {UserId}", id);
-                throw;
-            }
+                VolunteerId = volunteerId,
+                ProjectId = projectId,
+                Status = ApplicationStatus.Pending
+            };
+
+            await _unitOfWork.Applications.AddAsync(application);
+            await _unitOfWork.SaveChangesAsync();
+
+            await _notificationService.NotifyApplicationSubmittedAsync(application);
+
+            return application;
+        }
+
+
+        public async Task<bool> ApproveApplicationAsync(Application application, string? notes)
+        {
+            var context = _stateContextFactory.CreateContext(application);
+
+            if (!context.CanApprove())
+                return false;
+
+            var result = await context.ApproveAsync(notes);
+            await _unitOfWork.SaveChangesAsync();
+
+            
+            await _notificationService.NotifyApplicationApprovedAsync(application);
+
+            return result;
+        }
+
+        public async Task<bool> RejectApplicationAsync(Application application, string? notes)
+        {
+            var context = _stateContextFactory.CreateContext(application);
+
+            if (!context.CanReject())
+                return false;
+
+            var result = await context.RejectAsync(notes);
+            await _unitOfWork.SaveChangesAsync();
+
+            await _notificationService.NotifyApplicationRejectedAsync(application);
+            return result;
+        }
+
+        public async Task<bool> WithdrawApplicationAsync(Application application)
+        {
+            var context = _stateContextFactory.CreateContext(application);
+
+            if (!context.CanWithdraw())
+                return false;
+
+            var result = await context.WithdrawAsync();
+            await _unitOfWork.SaveChangesAsync();
+
+            await _notificationService.NotifyApplicationWithdrawnAsync(application);
+            return result;
+        }
+
+      
+        private void UpdateUser(User user)
+        {
+            if (user is Volunteer v) _unitOfWork.Volunteers.Update(v);
+            else if (user is Organization o) _unitOfWork.Organizations.Update(o);
+            else if (user is Admin a) _unitOfWork.Admins.Update(a);
+        }
+
+        private void RemoveUser(User user)
+        {
+            if (user is Volunteer v) _unitOfWork.Volunteers.Remove(v);
+            else if (user is Organization o) _unitOfWork.Organizations.Remove(o);
+            else if (user is Admin a) _unitOfWork.Admins.Remove(a);
         }
     }
 }
