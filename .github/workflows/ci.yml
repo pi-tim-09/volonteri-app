@@ -3,10 +3,10 @@ name: .NET CI
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
     branches:
-      - main
+      - master
 
 jobs:
   build-and-test:
@@ -28,7 +28,7 @@ jobs:
         run: dotnet build volonteri-app.sln --no-restore --configuration Release
 
       - name: Run Unit Tests
-        run: dotnet test WebApp.UnitTests/WebApp.UnitTests.csproj --no-build --verbosity normal
+        run: dotnet test WebApp.UnitTests/WebApp.UnitTests.csproj --verbosity normal
 
       - name: Run Integration Tests
-        run: dotnet test WebApp.IntegrationTests/WebApp.IntegrationTests.csproj --no-build --verbosity normal
+        run: dotnet test WebApp.IntegrationTests/WebApp.IntegrationTests.csproj --verbosity normal
