@@ -8,5 +8,7 @@ namespace WebApp.IntegrationTests
 {
     internal class TestClassForWorkFlow
     {
+        public int ovoJeDodatakTestu { get; set; }
+        public int ovoJeDodatakTestu2 { get; set; }
     }
 }
