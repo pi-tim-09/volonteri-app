@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var isLoggedIn = Context.Session.GetInt32("UserId") != null;
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -43,7 +47,23 @@
                                 <i class="bi bi-file-text"></i> Applications
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Index">
+                                <i class="bi bi-people"></i> Users
+                            </a>
+                        </li>
                     </ul>
+                    @if (isLoggedIn)
+                    {
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-danger">Logout</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a class="btn btn-primary ms-2" asp-controller="Account" asp-action="Login">Login</a>
+                        <a class="btn btn-secondary ms-2" asp-controller="Account" asp-action="Register">Register</a>
+                    }
                 </div>
             </div>
         </nav>

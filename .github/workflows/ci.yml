@@ -1,0 +1,34 @@
+name: .NET CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore volonteri-app.sln
+
+      - name: Build solution
+        run: dotnet build volonteri-app.sln --no-restore --configuration Release
+
+      - name: Run Unit Tests
+        run: dotnet test WebApp.UnitTests/WebApp.UnitTests.csproj --verbosity normal
+
+      - name: Run Integration Tests
+        run: dotnet test WebApp.IntegrationTests/WebApp.IntegrationTests.csproj --verbosity normal

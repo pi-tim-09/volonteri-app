@@ -1,0 +1,151 @@
+﻿@model WebApp.Models.User
+
+@{
+    ViewData["Title"] = "Delete User";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h2 class="mb-0"><i class="bi bi-exclamation-triangle-fill"></i> Delete User Confirmation</h2>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning" role="alert">
+                        <h5 class="alert-heading"><i class="bi bi-exclamation-circle"></i> Warning!</h5>
+                        <p>Are you sure you want to delete this user? This action cannot be undone.</p>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5 class="border-bottom pb-2">User Information</h5>
+                            
+                            <div class="mb-3">
+                                <label class="fw-bold text-muted">ID:</label>
+                                <p class="ms-3">@Model.Id</p>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="fw-bold text-muted">Name:</label>
+                                <p class="ms-3">@Model.FirstName @Model.LastName</p>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="fw-bold text-muted">Email:</label>
+                                <p class="ms-3">@Model.Email</p>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="fw-bold text-muted">Phone:</label>
+                                <p class="ms-3">@Model.PhoneNumber</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h5 class="border-bottom pb-2">Account Details</h5>
+
+                            <div class="mb-3">
+                                <label class="fw-bold text-muted">Role:</label>
+                                <p class="ms-3">
+                                    @switch (Model.Role)
+                                    {
+                                        case WebApp.Models.UserRole.Admin:
+                                            <span class="badge bg-danger fs-6">
+                                                <i class="bi bi-shield-fill-check"></i> Admin
+                                            </span>
+                                            break;
+                                        case WebApp.Models.UserRole.Organization:
+                                            <span class="badge bg-primary fs-6">
+                                                <i class="bi bi-building"></i> Organization
+                                            </span>
+                                            break;
+                                        case WebApp.Models.UserRole.Volunteer:
+                                            <span class="badge bg-success fs-6">
+                                                <i class="bi bi-person-heart"></i> Volunteer
+                                            </span>
+                                            break;
+                                    }
+                                </p>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="fw-bold text-muted">Status:</label>
+                                <p class="ms-3">
+                                    @if (Model.IsActive)
+                                    {
+                                        <span class="badge bg-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    }
+                                </p>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="fw-bold text-muted">Created:</label>
+                                <p class="ms-3">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="fw-bold text-muted">Last Login:</label>
+                                <p class="ms-3">
+                                    @if (Model.LastLoginAt.HasValue)
+                                    {
+                                        @Model.LastLoginAt.Value.ToString("dd/MM/yyyy HH:mm")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Never</span>
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model is WebApp.Models.Organization org)
+                    {
+                        <div class="alert alert-info" role="alert">
+                            <strong>Organization:</strong> @org.OrganizationName
+                            <br />
+                            <strong>Note:</strong> Deleting this organization will also remove all associated projects and applications.
+                        </div>
+                    }
+
+                    @if (Model is WebApp.Models.Volunteer volunteer)
+                    {
+                        <div class="alert alert-info" role="alert">
+                            <strong>Volunteer Hours:</strong> @volunteer.VolunteerHours hours
+                            <br />
+                            <strong>Note:</strong> Deleting this volunteer will also remove all application records.
+                        </div>
+                    }
+
+                    @if (Model is WebApp.Models.Admin admin)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <strong>Warning:</strong> You are about to delete an administrator account.
+                            <br />
+                            <strong>Department:</strong> @admin.Department
+                        </div>
+                    }
+
+                    <hr />
+
+                    <form asp-action="Delete" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="Index" class="btn btn-secondary btn-lg">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="bi bi-trash"></i> Confirm Delete
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

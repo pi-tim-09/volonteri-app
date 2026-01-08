@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using WebApp.Models;
 
 namespace WebApp.Data
@@ -35,7 +35,7 @@ namespace WebApp.Data
                 entity.HasMany(v => v.Applications)
                     .WithOne(a => a.Volunteer)
                     .HasForeignKey(a => a.VolunteerId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                    .OnDelete(DeleteBehavior.Restrict); // Changed from Cascade to Restrict
             });
 
             // Configure Organization

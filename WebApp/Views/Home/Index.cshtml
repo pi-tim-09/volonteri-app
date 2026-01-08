@@ -1,8 +1,290 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
+    var isLoggedIn = Context.Session.GetInt32("UserId") != null;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<!-- Hero Section -->
+<section class="hero-section text-white text-center py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 500px; display: flex; align-items: center;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8 mx-auto">
+                <h1 class="display-3 fw-bold mb-4">
+                    <i class="bi bi-heart-fill text-danger"></i> Make a Difference Today
+                </h1>
+                <p class="lead mb-4 fs-4">
+                    Join thousands of volunteers connecting with meaningful projects in your community. 
+                    Whether you want to help others or find passionate volunteers for your cause, we're here to help.
+                </p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    @if (isLoggedIn)
+                    {
+                        <a asp-controller="Projects" asp-action="Index" class="btn btn-light btn-lg px-5 py-3">
+                            <i class="bi bi-folder"></i> Browse Projects
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-light btn-lg px-5 py-3">
+                            <i class="bi bi-person-plus"></i> Get Started
+                        </a>
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light btn-lg px-5 py-3">
+                            <i class="bi bi-box-arrow-in-right"></i> Sign In
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold mb-3">Why Choose VolonteriApp?</h2>
+            <p class="lead text-muted">Everything you need to connect volunteers with meaningful opportunities</p>
+        </div>
+        
+        <div class="row g-4">
+            <!-- Feature 1 -->
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0 text-center p-4">
+                    <div class="card-body">
+                        <div class="feature-icon bg-primary bg-gradient text-white rounded-circle mx-auto mb-3" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-search" style="font-size: 2rem;"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Find Projects Easily</h4>
+                        <p class="text-muted">
+                            Search and filter through hundreds of volunteer opportunities by location, category, skills, and dates. 
+                            Find the perfect match for your interests and availability.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0 text-center p-4">
+                    <div class="card-body">
+                        <div class="feature-icon bg-success bg-gradient text-white rounded-circle mx-auto mb-3" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-people-fill" style="font-size: 2rem;"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Connect with Organizations</h4>
+                        <p class="text-muted">
+                            Work with verified non-profit organizations and community groups. 
+                            Build meaningful relationships while making a real impact in your community.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0 text-center p-4">
+                    <div class="card-body">
+                        <div class="feature-icon bg-info bg-gradient text-white rounded-circle mx-auto mb-3" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-graph-up-arrow" style="font-size: 2rem;"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Track Your Impact</h4>
+                        <p class="text-muted">
+                            Monitor your volunteer hours, completed projects, and acquired skills. 
+                            Build your volunteer profile and showcase your community contributions.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold mb-3">How It Works</h2>
+            <p class="lead text-muted">Get started in three simple steps</p>
+        </div>
+        
+        <div class="row g-4 align-items-center">
+            <!-- Step 1 -->
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="step-number bg-primary text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center fw-bold" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                        1
+                    </div>
+                    <h4 class="fw-bold mb-3">Create Your Account</h4>
+                    <p class="text-muted">
+                        Sign up as a volunteer or organization in just a few clicks. 
+                        Set up your profile with your skills, interests, and availability.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="step-number bg-success text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center fw-bold" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                        2
+                    </div>
+                    <h4 class="fw-bold mb-3">Browse & Apply</h4>
+                    <p class="text-muted">
+                        Explore available projects or post your own volunteer opportunities. 
+                        Submit applications or review incoming volunteer requests.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="step-number bg-info text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center fw-bold" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                        3
+                    </div>
+                    <h4 class="fw-bold mb-3">Make an Impact</h4>
+                    <p class="text-muted">
+                        Participate in projects, track your hours, and grow your skills. 
+                        Build your community and make a lasting difference.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-5 bg-primary text-white">
+    <div class="container">
+        <div class="row text-center g-4">
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <i class="bi bi-people-fill display-4 mb-2"></i>
+                    <h3 class="display-4 fw-bold">1,000+</h3>
+                    <p class="lead">Active Volunteers</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <i class="bi bi-folder-fill display-4 mb-2"></i>
+                    <h3 class="display-4 fw-bold">500+</h3>
+                    <p class="lead">Active Projects</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <i class="bi bi-building display-4 mb-2"></i>
+                    <h3 class="display-4 fw-bold">150+</h3>
+                    <p class="lead">Organizations</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <i class="bi bi-clock-history display-4 mb-2"></i>
+                    <h3 class="display-4 fw-bold">50K+</h3>
+                    <p class="lead">Volunteer Hours</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="display-5 fw-bold mb-4">Ready to Make a Difference?</h2>
+                <p class="lead text-muted mb-4">
+                    Join our community today and start connecting with meaningful volunteer opportunities in your area.
+                </p>
+                @if (isLoggedIn)
+                {
+                    <a asp-controller="Projects" asp-action="Index" class="btn btn-primary btn-lg px-5 py-3">
+                        <i class="bi bi-folder"></i> Explore Projects Now
+                    </a>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Register" class="btn btn-primary btn-lg px-5 py-3">
+                        <i class="bi bi-person-plus"></i> Sign Up For Free
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold mb-3">Popular Categories</h2>
+            <p class="lead text-muted">Find volunteer opportunities in areas that matter to you</p>
+        </div>
+        
+        <div class="row g-3">
+            <div class="col-6 col-md-3">
+                <div class="card text-center p-3 h-100 shadow-sm border-0 category-card">
+                    <i class="bi bi-tree-fill text-success display-4 mb-2"></i>
+                    <h5 class="fw-bold">Environment</h5>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card text-center p-3 h-100 shadow-sm border-0 category-card">
+                    <i class="bi bi-book-fill text-primary display-4 mb-2"></i>
+                    <h5 class="fw-bold">Education</h5>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card text-center p-3 h-100 shadow-sm border-0 category-card">
+                    <i class="bi bi-heart-pulse-fill text-danger display-4 mb-2"></i>
+                    <h5 class="fw-bold">Healthcare</h5>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card text-center p-3 h-100 shadow-sm border-0 category-card">
+                    <i class="bi bi-palette-fill text-warning display-4 mb-2"></i>
+                    <h5 class="fw-bold">Arts & Culture</h5>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card text-center p-3 h-100 shadow-sm border-0 category-card">
+                    <i class="bi bi-shop text-info display-4 mb-2"></i>
+                    <h5 class="fw-bold">Community</h5>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card text-center p-3 h-100 shadow-sm border-0 category-card">
+                    <i class="bi bi-trophy-fill text-warning display-4 mb-2"></i>
+                    <h5 class="fw-bold">Sports</h5>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card text-center p-3 h-100 shadow-sm border-0 category-card">
+                    <i class="bi bi-shield-fill-check text-secondary display-4 mb-2"></i>
+                    <h5 class="fw-bold">Social Services</h5>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card text-center p-3 h-100 shadow-sm border-0 category-card">
+                    <i class="bi bi-globe text-success display-4 mb-2"></i>
+                    <h5 class="fw-bold">International</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        // Add hover effects to category cards
+        document.querySelectorAll('.category-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+                this.style.transition = 'transform 0.3s ease';
+            });
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+}
