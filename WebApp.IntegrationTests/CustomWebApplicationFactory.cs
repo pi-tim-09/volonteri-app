@@ -8,13 +8,14 @@ namespace WebApp.IntegrationTests;
 
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
+    private readonly string _databaseName = $"IntegrationTestsDb-{Guid.NewGuid()}";
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");
 
         builder.ConfigureServices(services =>
         {
-            // Remove the app's ApplicationDbContext registration.
             var dbContextDescriptor = services.SingleOrDefault(
                 d => d.ServiceType == typeof(DbContextOptions<ApplicationDbContext>));
 
@@ -23,13 +24,11 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 services.Remove(dbContextDescriptor);
             }
 
-            // Register ApplicationDbContext to use InMemory database for tests.
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseInMemoryDatabase("IntegrationTestsDb-" + Guid.NewGuid());
+                options.UseInMemoryDatabase(_databaseName);
             });
 
-            // Build the service provider and ensure DB created.
             var sp = services.BuildServiceProvider();
             using var scope = sp.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
