@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          
+          <Exclude>
+            [WebApp.UnitTests]*
+            [WebApp.IntegrationTests]*
+            [xunit.*]*
+            [FluentAssertions]*
+            [Moq]*
+          </Exclude>
+          
+          <ExcludeByFile>
+            **/Migrations/*.cs
+            **/obj/**/*.cs
+          </ExcludeByFile>
+          
+          <ExcludeByAttribute>
+            CompilerGeneratedAttribute
+            GeneratedCodeAttribute
+            ExcludeFromCodeCoverageAttribute
+          </ExcludeByAttribute>
+          >
+          <UseSourceLink>true</UseSourceLink>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+
+  <RunConfiguration>
+    <ResultsDirectory>.\TestResults</ResultsDirectory>
+  </RunConfiguration>
+</RunSettings>
