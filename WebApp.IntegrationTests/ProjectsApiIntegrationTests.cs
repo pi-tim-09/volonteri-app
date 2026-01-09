@@ -131,7 +131,7 @@ public class ProjectsApiIntegrationTests : IClassFixture<CustomWebApplicationFac
 
    
 
-    #
+    
 
     [Fact]
     public async Task GetProject_WhenExists_Returns200()
