@@ -24,7 +24,7 @@ public class OrganizationServiceTests
         return new OrganizationService(_unitOfWork.Object, _logger.Object);
     }
 
-    #region Constructor Tests
+    
 
     [Fact]
     public void Constructor_WhenUnitOfWorkIsNull_ThrowsArgumentNullException()
@@ -48,9 +48,9 @@ public class OrganizationServiceTests
             .WithParameterName("logger");
     }
 
-    #endregion
+   
 
-    #region CreateOrganizationAsync Tests
+  
 
     [Fact]
     public async Task CreateOrganizationAsync_WhenOrganizationIsNull_ThrowsArgumentNullException()
@@ -125,9 +125,9 @@ public class OrganizationServiceTests
         result.Should().BeSameAs(organization);
     }
 
-    #endregion
+    
 
-    #region UpdateOrganizationAsync Tests
+    
 
     [Fact]
     public async Task UpdateOrganizationAsync_WhenOrganizationNotFound_ReturnsFalse()
@@ -190,7 +190,7 @@ public class OrganizationServiceTests
             Address = "New Address",
             City = "New City",
             IsActive = false,
-            IsVerified = false // Should NOT be updated via this method
+            IsVerified = false 
         };
 
         // Act
@@ -208,16 +208,16 @@ public class OrganizationServiceTests
         existingOrg.City.Should().Be("New City");
         existingOrg.IsActive.Should().BeFalse();
         
-        // Business rule: IsVerified should NOT be updated via UpdateOrganizationAsync
+        
         existingOrg.IsVerified.Should().BeTrue("IsVerified should only be changed via VerifyOrganizationAsync");
         
         _orgRepo.Verify(r => r.Update(existingOrg), Times.Once);
         _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
     }
 
-    #endregion
+    
 
-    #region DeleteOrganizationAsync Tests
+    
 
     [Fact]
     public async Task DeleteOrganizationAsync_WhenOrganizationHasProjects_ThrowsInvalidOperationException()
@@ -225,7 +225,7 @@ public class OrganizationServiceTests
         // Arrange
         var sut = CreateSut();
         _projectRepo.Setup(r => r.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Project, bool>>>()))
-            .ReturnsAsync(2); // Has 2 projects
+            .ReturnsAsync(2); 
 
         // Act
         Func<Task> act = async () => await sut.DeleteOrganizationAsync(1);
@@ -272,9 +272,9 @@ public class OrganizationServiceTests
         _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
     }
 
-    #endregion
+   
 
-    #region GetOrganizationByIdAsync Tests
+    
 
     [Fact]
     public async Task GetOrganizationByIdAsync_WhenOrganizationExists_ReturnsOrganization()
@@ -306,9 +306,9 @@ public class OrganizationServiceTests
         result.Should().BeNull();
     }
 
-    #endregion
+   
 
-    #region GetAllOrganizationsAsync Tests
+    
 
     [Fact]
     public async Task GetAllOrganizationsAsync_ReturnsAllOrganizations()
@@ -346,9 +346,9 @@ public class OrganizationServiceTests
         result.Should().BeEmpty();
     }
 
-    #endregion
+   
 
-    #region VerifyOrganizationAsync Tests
+   
 
     [Fact]
     public async Task VerifyOrganizationAsync_WhenOrganizationNotFound_ReturnsFalse()
@@ -432,9 +432,9 @@ public class OrganizationServiceTests
         _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.Never);
     }
 
-    #endregion
+    
 
-    #region UnverifyOrganizationAsync Tests
+    
 
     [Fact]
     public async Task UnverifyOrganizationAsync_WhenOrganizationNotFound_ReturnsFalse()
@@ -476,9 +476,9 @@ public class OrganizationServiceTests
         _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
     }
 
-    #endregion
+   
 
-    #region CanCreateProjectAsync Tests
+    
 
     [Fact]
     public async Task CanCreateProjectAsync_WhenOrganizationNotFound_ReturnsFalse()
@@ -557,9 +557,9 @@ public class OrganizationServiceTests
         result.Should().BeTrue("organization is both verified and active");
     }
 
-    #endregion
+    
 
-    #region OrganizationExistsAsync Tests
+    
 
     [Fact]
     public async Task OrganizationExistsAsync_WhenOrganizationExists_ReturnsTrue()
@@ -591,9 +591,9 @@ public class OrganizationServiceTests
         result.Should().BeFalse();
     }
 
-    #endregion
+    
 
-    #region CanDeleteOrganizationAsync Tests
+    
 
     [Fact]
     public async Task CanDeleteOrganizationAsync_WhenOrganizationHasProjects_ReturnsFalse()
@@ -625,9 +625,9 @@ public class OrganizationServiceTests
         result.Should().BeTrue("organization has no projects");
     }
 
-    #endregion
+    
 
-    #region Error Handling Tests
+    
 
     [Fact]
     public async Task CreateOrganizationAsync_WhenRepositoryThrows_RethrowsException()
@@ -719,5 +719,5 @@ public class OrganizationServiceTests
             .WithMessage("Verify failed");
     }
 
-    #endregion
+    
 }

@@ -6,7 +6,7 @@ namespace WebApp.UnitTests.Patterns.Creational;
 
 public class OrganizationFactoryTests
 {
-    #region SupportedRole Tests
+   
 
     [Fact]
     public void SupportedRole_ReturnsOrganization()
@@ -21,9 +21,9 @@ public class OrganizationFactoryTests
         supportedRole.Should().Be(UserRole.Organization);
     }
 
-    #endregion
+    
 
-    #region CreateUser Tests
+    
 
     [Fact]
     public void CreateUser_CreatesOrganizationWithCorrectBasicProperties()
@@ -175,9 +175,8 @@ public class OrganizationFactoryTests
         organization.IsActive.Should().BeTrue();
     }
 
-    #endregion
+   
 
-    #region Integration with UserFactoryProvider Tests
 
     [Fact]
     public void CreateUser_CanBeUsedByUserFactoryProvider()
@@ -197,5 +196,5 @@ public class OrganizationFactoryTests
         result.Role.Should().Be(UserRole.Organization);
     }
 
-    #endregion
+    
 }

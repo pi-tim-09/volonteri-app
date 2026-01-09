@@ -23,7 +23,7 @@ public class UnitOfWorkTests : IDisposable
 
     public void Dispose()
     {
-        // Only dispose UnitOfWork, which will dispose the context
+       
         _unitOfWork.Dispose();
     }
 
@@ -114,10 +114,10 @@ public class UnitOfWorkTests : IDisposable
     public async Task BeginTransactionAsync_CompletesSuccessfully()
     {
         // Act & Assert - InMemory database doesn't support real transactions
-        // Just verify the method completes without throwing an exception
+      
         await _unitOfWork.BeginTransactionAsync();
         
-        // The method should complete successfully even though InMemory ignores transactions
+        
         true.Should().BeTrue("BeginTransactionAsync should complete without error");
     }
 
@@ -140,7 +140,7 @@ public class UnitOfWorkTests : IDisposable
         // Act
         await _unitOfWork.CommitTransactionAsync();
 
-        // Assert - InMemory doesn't support real transactions, but data should be saved
+        // Assert 
         var committed = await _context.Admins.FirstOrDefaultAsync(a => a.Email == "commit@example.com");
         committed.Should().NotBeNull();
     }
@@ -165,8 +165,8 @@ public class UnitOfWorkTests : IDisposable
         // Act
         await _unitOfWork.RollbackTransactionAsync();
 
-        // Assert - InMemory doesn't support rollback, so data will still be there
-        // This test just verifies the method completes without error
+        // Assert 
+       
         var result = await _context.Admins.FirstOrDefaultAsync(a => a.Email == "rollback@example.com");
         result.Should().NotBeNull("InMemory database doesn't support real rollback");
     }

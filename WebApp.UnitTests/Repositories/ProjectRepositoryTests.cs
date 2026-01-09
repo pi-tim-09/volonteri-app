@@ -193,7 +193,7 @@ public class ProjectRepositoryTests : IDisposable
         _context.Projects.AddRange(project1, project2, project3, project4);
         await _context.SaveChangesAsync();
 
-        // Act - Use exact case that matches the data
+        // Act 
         var result = await _repository.SearchProjectsAsync("Environment");
 
         // Assert

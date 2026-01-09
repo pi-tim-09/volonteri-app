@@ -299,7 +299,7 @@ public class OrganizationRepositoryTests : IDisposable
         _context.Organizations.AddRange(org1, org2, org3, org4);
         await _context.SaveChangesAsync();
 
-        // Act - Use exact case that matches the data
+        // Act 
         var result = await _repository.SearchOrganizationsAsync("Environment");
 
         // Assert

@@ -29,7 +29,7 @@ public class ProjectsControllerTests
         return controller;
     }
 
-    #region Existing Tests
+    
 
     [Fact]
     public async Task Index_WhenNoOrganizationId_ReturnsViewWithAllProjects()
@@ -95,9 +95,9 @@ public class ProjectsControllerTests
         result.Should().BeOfType<NotFoundResult>();
     }
 
-    #endregion
+    
 
-    #region Additional Index Tests
+    
 
     [Fact]
     public async Task Index_WhenOrganizationNotFound_StillReturnsProjects()
@@ -134,9 +134,9 @@ public class ProjectsControllerTests
         sut.TempData["ErrorMessage"].Should().NotBeNull();
     }
 
-    #endregion
+   
 
-    #region Additional Edit GET Tests
+    
 
     [Fact]
     public async Task Edit_Get_WhenProjectExists_ReturnsViewWithProject()
@@ -175,9 +175,9 @@ public class ProjectsControllerTests
         sut.TempData["ErrorMessage"].Should().NotBeNull();
     }
 
-    #endregion
+    
 
-    #region Edit POST Tests
+    
 
     [Fact]
     public async Task Edit_Post_WhenModelInvalid_ReturnsViewWithModel()
@@ -269,5 +269,5 @@ public class ProjectsControllerTests
         view.Model.Should().BeSameAs(project);
     }
 
-    #endregion
+   
 }

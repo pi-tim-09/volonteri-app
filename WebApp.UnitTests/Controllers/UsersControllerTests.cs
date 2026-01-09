@@ -26,7 +26,7 @@ public class UsersControllerTests
         return controller;
     }
 
-    #region Existing Tests
+  
 
     [Fact]
     public async Task Index_WhenServiceReturnsViewModel_ReturnsView()
@@ -122,9 +122,8 @@ public class UsersControllerTests
         result.Should().BeOfType<NotFoundResult>();
     }
 
-    #endregion
+  
 
-    #region Additional Index Tests
 
     [Fact]
     public async Task Index_WhenExceptionThrown_ReturnsViewWithEmptyModel()
@@ -160,9 +159,9 @@ public class UsersControllerTests
         _userService.Verify(s => s.GetFilteredUsersAsync("search", UserRole.Volunteer, true, 2, 20), Times.Once);
     }
 
-    #endregion
+ 
 
-    #region Additional Details Tests
+   
 
     [Fact]
     public async Task Details_WhenUserExists_ReturnsViewWithUser()
@@ -197,9 +196,9 @@ public class UsersControllerTests
         sut.TempData["ErrorMessage"].Should().NotBeNull();
     }
 
-    #endregion
+   
 
-    #region Additional Create Tests
+   
 
     [Fact]
     public void Create_Get_ReturnsView()
@@ -253,9 +252,9 @@ public class UsersControllerTests
         sut.ModelState.ErrorCount.Should().BeGreaterThan(0);
     }
 
-    #endregion
+   
 
-    #region Additional Edit Tests
+   
 
     [Fact]
     public async Task Edit_Get_WhenUserExists_ReturnsViewWithUserVM()
@@ -349,9 +348,9 @@ public class UsersControllerTests
         sut.ModelState.ErrorCount.Should().BeGreaterThan(0);
     }
 
-    #endregion
+   
 
-    #region Delete Tests
+   
 
     [Fact]
     public async Task Delete_Get_WhenUserExists_ReturnsViewWithUser()
@@ -452,5 +451,5 @@ public class UsersControllerTests
         sut.TempData["ErrorMessage"].Should().NotBeNull();
     }
 
-    #endregion
+   
 }

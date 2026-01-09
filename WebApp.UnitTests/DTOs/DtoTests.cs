@@ -9,7 +9,7 @@ namespace WebApp.UnitTests.DTOs;
 
 public class DtoTests
 {
-    #region Admin DTOs
+    
 
     [Fact]
     public void AdminDto_CanSetAndGetAllProperties()
@@ -125,9 +125,9 @@ public class DtoTests
         dto.IsActive.Should().BeFalse();
     }
 
-    #endregion
+    
 
-    #region Application DTOs
+    
 
     [Fact]
     public void ApplicationDto_CanSetAndGetAllProperties()
@@ -209,9 +209,9 @@ public class DtoTests
         dto.ReviewNotes.Should().Be("Great application");
     }
 
-    #endregion
+    
 
-    #region Project DTOs
+  
 
     [Fact]
     public void ProjectDto_CanSetAndGetAllProperties()
@@ -332,9 +332,9 @@ public class DtoTests
         dto.OrganizationId.Should().Be(7);
     }
 
-    #endregion
+   
 
-    #region User DTOs
+   
 
     [Fact]
     public void ChangePasswordRequest_CanSetAndGetAllProperties()
@@ -374,9 +374,9 @@ public class DtoTests
         dto.IsActive.Should().BeTrue();
     }
 
-    #endregion
+  
 
-    #region DTO Default Values
+    
 
     [Fact]
     public void AdminDto_DefaultValues_AreCorrect()
@@ -386,7 +386,7 @@ public class DtoTests
 
         // Assert
         dto.Id.Should().Be(0);
-        dto.Email.Should().NotBeNull(); // DTOs initialize strings to empty string
+        dto.Email.Should().NotBeNull(); 
         dto.CanManageUsers.Should().BeFalse();
         dto.CanManageOrganizations.Should().BeFalse();
         dto.CanManageProjects.Should().BeFalse();
@@ -420,9 +420,9 @@ public class DtoTests
         dto.CurrentVolunteers.Should().Be(0);
     }
 
-    #endregion
+    
 
-    #region DTO Collections
+    
 
     [Fact]
     public void AdminListDto_WithEmptyList_Works()
@@ -469,9 +469,9 @@ public class DtoTests
         dto.TotalCount.Should().Be(0);
     }
 
-    #endregion
+    
 
-    #region DTO Null Values
+    
 
     [Fact]
     public void ApplicationDto_WithNullReviewData_AllowsNull()
@@ -519,5 +519,5 @@ public class DtoTests
         dto.UpdatedAt.Should().BeNull();
     }
 
-    #endregion
+    
 }

@@ -21,7 +21,7 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
         _client = factory.CreateClient();
     }
 
-    #region Helper Methods
+   
 
     private async Task<Organization> CreateTestOrganizationInDb(string email = "testorg@example.com")
     {
@@ -78,9 +78,9 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
         return project;
     }
 
-    #endregion
+   
 
-    #region GET /api/organizations Tests
+   
 
     [Fact]
     public async Task GetOrganizations_Returns200()
@@ -131,9 +131,9 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
         organization.IsActive.Should().BeTrue();
     }
 
-    #endregion
+   
 
-    #region GET /api/organizations/{id} Tests
+    
 
     [Fact]
     public async Task GetOrganization_WhenExists_Returns200()
@@ -170,9 +170,9 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
         apiResponse.Message.Should().Contain("not found");
     }
 
-    #endregion
+  
 
-    #region POST /api/organizations Tests
+    
 
     [Fact]
     public async Task CreateOrganization_WhenValid_Returns201()
@@ -216,7 +216,7 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
         // Arrange - missing required fields
         var request = new CreateOrganizationRequest
         {
-            Email = "", // Invalid
+            Email = "", 
             Password = "Password123!",
             ConfirmPassword = "Password123!",
             FirstName = "",
@@ -262,7 +262,7 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
         apiResponse.Should().NotBeNull();
         apiResponse!.Data.Should().NotBeNull();
 
-        // Verify password is hashed in database
+        
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var createdOrg = await context.Organizations.FindAsync(apiResponse.Data!.Id);
@@ -272,9 +272,9 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
         createdOrg.PasswordHash.Should().NotBeNullOrEmpty();
     }
 
-    #endregion
+    
 
-    #region PUT /api/organizations/{id} Tests
+    
 
     [Fact]
     public async Task UpdateOrganization_WhenValid_Returns200()
@@ -304,7 +304,7 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
         apiResponse.Should().NotBeNull();
         apiResponse!.Success.Should().BeTrue();
 
-        // Verify in database
+       
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var updatedOrg = await context.Organizations.FindAsync(organization.Id);
@@ -343,7 +343,7 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
         // Arrange
         var organization = await CreateTestOrganizationInDb();
         
-        // Verify organization first
+   
         using (var scope = _factory.Services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -367,7 +367,7 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
         // Act
         await _client.PutAsJsonAsync($"/api/organizations/{organization.Id}", request);
 
-        // Assert - Verify IsVerified was NOT changed
+        // Assert 
         using var verifyScope = _factory.Services.CreateScope();
         var verifyContext = verifyScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var updatedOrg = await verifyContext.Organizations.FindAsync(organization.Id);
@@ -375,9 +375,9 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
         updatedOrg.VerifiedAt.Should().NotBeNull();
     }
 
-    #endregion
+    
 
-    #region DELETE /api/organizations/{id} Tests
+    
 
     [Fact]
     public async Task DeleteOrganization_WhenNoProjects_Returns200()
@@ -395,7 +395,7 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
         apiResponse.Should().NotBeNull();
         apiResponse!.Success.Should().BeTrue();
 
-        // Verify deleted from database
+        
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var deletedOrg = await context.Organizations.FindAsync(organization.Id);
@@ -409,7 +409,7 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
         var organization = await CreateTestOrganizationInDb($"orgwithproj{Guid.NewGuid():N}@example.com");
         var project = await CreateTestProjectForOrganization(organization.Id);
         
-        // Verify project was created
+        
         using (var scope = _factory.Services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -423,7 +423,7 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
 
-        // Verify NOT deleted from database
+        
         using var verifyScope = _factory.Services.CreateScope();
         var verifyContext = verifyScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         verifyContext.ChangeTracker.Clear();
@@ -441,9 +441,9 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    #endregion
+    
 
-    #region PATCH /api/organizations/{id}/verify Tests
+   
 
     [Fact]
     public async Task VerifyOrganization_WhenNotVerified_Returns200()
@@ -461,11 +461,11 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
         apiResponse.Should().NotBeNull();
         apiResponse!.Success.Should().BeTrue();
 
-        // Verify in database with fresh context
+       
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         
-        // Detach any tracked entities and reload from database
+     
         context.ChangeTracker.Clear();
         var verifiedOrg = await context.Organizations.FindAsync(organization.Id);
         
@@ -481,10 +481,9 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
         // Arrange
         var organization = await CreateTestOrganizationInDb();
         
-        // Verify first time
         await _client.PatchAsync($"/api/organizations/{organization.Id}/verify", null);
 
-        // Act - Try to verify again
+     
         var response = await _client.PatchAsync($"/api/organizations/{organization.Id}/verify", null);
 
         // Assert
@@ -501,9 +500,9 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    #endregion
+    
 
-    #region PATCH /api/organizations/{id}/unverify Tests
+   
 
     [Fact]
     public async Task UnverifyOrganization_WhenVerified_Returns200()
@@ -511,7 +510,7 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
         // Arrange
         var organization = await CreateTestOrganizationInDb();
         
-        // Verify first
+       
         await _client.PatchAsync($"/api/organizations/{organization.Id}/verify", null);
 
         // Act - Unverify
@@ -524,11 +523,11 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
         apiResponse.Should().NotBeNull();
         apiResponse!.Success.Should().BeTrue();
 
-        // Verify in database with fresh context
+        
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         
-        // Clear change tracker to get fresh data
+        
         context.ChangeTracker.Clear();
         var unverifiedOrg = await context.Organizations.FindAsync(organization.Id);
         
@@ -547,14 +546,14 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    #endregion
+    
 
-    #region End-to-End Workflow Tests
+    
 
     [Fact]
     public async Task CompleteOrganizationLifecycle_WorksEndToEnd()
     {
-        // 1. Create organization
+        
         var createRequest = new CreateOrganizationRequest
         {
             Email = $"lifecycle{Guid.NewGuid():N}@example.com",
@@ -574,7 +573,7 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
         var createdOrg = await createResponse.Content.ReadFromJsonAsync<ApiResponse<OrganizationDto>>();
         var orgId = createdOrg!.Data!.Id;
 
-        // 2. Verify organization can't create projects yet (not verified)
+        
         using (var scope = _factory.Services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -585,11 +584,11 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
             canCreate.Should().BeFalse("unverified organization shouldn't create projects");
         }
 
-        // 3. Verify organization
+       
         var verifyResponse = await _client.PatchAsync($"/api/organizations/{orgId}/verify", null);
         verifyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // 4. Verify organization can now create projects
+        
         using (var scope = _factory.Services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -600,7 +599,7 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
             canCreate.Should().BeTrue("verified and active organization should create projects");
         }
 
-        // 5. Update organization
+        
         var updateRequest = new UpdateOrganizationRequest
         {
             Email = createRequest.Email,
@@ -617,7 +616,7 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
         var updateResponse = await _client.PutAsJsonAsync($"/api/organizations/{orgId}", updateRequest);
         updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // 6. Verify update didn't affect verification
+        
         using (var scope = _factory.Services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -626,14 +625,14 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
             org.OrganizationName.Should().Be("Updated Lifecycle Organization");
         }
 
-        // 7. Delete organization (should succeed - no projects)
+        
         var deleteResponse = await _client.DeleteAsync($"/api/organizations/{orgId}");
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // 8. Verify deletion
+        
         var getResponse = await _client.GetAsync($"/api/organizations/{orgId}");
         getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    #endregion
+    
 }

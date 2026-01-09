@@ -23,7 +23,7 @@ public class UsersApiControllerTests
         return new UsersApiController(_userService.Object, _passwordHasher.Object, _logger.Object);
     }
 
-    #region Existing Tests
+    
 
     [Fact]
     public async Task GetUser_WhenNotFound_Returns404()
@@ -83,9 +83,9 @@ public class UsersApiControllerTests
         result.Should().BeOfType<BadRequestObjectResult>();
     }
 
-    #endregion
+   
 
-    #region GetUsers - Branch Coverage Tests
+    
 
     [Fact]
     public async Task GetUsers_WithAllFilters_ReturnsFilteredResults()
@@ -136,9 +136,9 @@ public class UsersApiControllerTests
         response.Message.Should().Be("Failed to retrieve users");
     }
 
-    #endregion
+   
 
-    #region GetUser - Branch Coverage Tests
+    
 
     [Fact]
     public async Task GetUser_WhenUserExists_Returns200WithUser()
@@ -183,9 +183,9 @@ public class UsersApiControllerTests
         statusCodeResult.StatusCode.Should().Be(500);
     }
 
-    #endregion
+    
 
-    #region CreateUser - Branch Coverage Tests (CRITICAL - Switch Statement)
+   
 
     [Fact]
     public async Task CreateUser_WhenModelStateInvalid_Returns400()
@@ -209,7 +209,7 @@ public class UsersApiControllerTests
     [Fact]
     public async Task CreateUser_WhenCreatingVolunteer_HashesPasswordAndCreates()
     {
-        // Arrange - BRANCH: UserRole.Volunteer in switch statement
+        // Arrange 
         var sut = CreateSut();
         var request = new CreateUserRequest
         {
@@ -246,7 +246,7 @@ public class UsersApiControllerTests
     [Fact]
     public async Task CreateUser_WhenCreatingOrganization_HashesPasswordAndCreates()
     {
-        // Arrange - BRANCH: UserRole.Organization in switch statement
+        // Arrange 
         var sut = CreateSut();
         var request = new CreateUserRequest
         {
@@ -278,7 +278,7 @@ public class UsersApiControllerTests
     [Fact]
     public async Task CreateUser_WhenCreatingAdmin_HashesPasswordAndCreates()
     {
-        // Arrange - BRANCH: UserRole.Admin in switch statement
+        // Arrange 
         var sut = CreateSut();
         var request = new CreateUserRequest
         {
@@ -310,7 +310,7 @@ public class UsersApiControllerTests
     [Fact]
     public async Task CreateUser_WhenExceptionThrown_Returns500()
     {
-        // Arrange - BRANCH: Exception catch block
+        // Arrange 
         var sut = CreateSut();
         var request = new CreateUserRequest
         {
@@ -336,9 +336,9 @@ public class UsersApiControllerTests
         statusCodeResult.StatusCode.Should().Be(500);
     }
 
-    #endregion
+    
 
-    #region UpdateUser - Branch Coverage Tests
+    
 
     [Fact]
     public async Task UpdateUser_WhenModelStateInvalid_Returns400()
@@ -368,7 +368,7 @@ public class UsersApiControllerTests
     [Fact]
     public async Task UpdateUser_WhenUserNotFound_Returns404()
     {
-        // Arrange - BRANCH: updated == false
+        // Arrange 
         var sut = CreateSut();
         var request = new UpdateUserRequest
         {
@@ -394,7 +394,7 @@ public class UsersApiControllerTests
     [Fact]
     public async Task UpdateUser_WhenValid_Returns200()
     {
-        // Arrange - BRANCH: updated == true
+        // Arrange 
         var sut = CreateSut();
         var request = new UpdateUserRequest
         {
@@ -442,14 +442,14 @@ public class UsersApiControllerTests
         statusCodeResult.StatusCode.Should().Be(500);
     }
 
-    #endregion
+    
 
-    #region DeleteUser - Branch Coverage Tests
+    
 
     [Fact]
     public async Task DeleteUser_WhenUserNotFound_Returns404()
     {
-        // Arrange - BRANCH: user == null
+        // Arrange 
         var sut = CreateSut();
         _userService.Setup(s => s.GetUserByIdAsync(999)).ReturnsAsync((User?)null);
 
@@ -468,7 +468,7 @@ public class UsersApiControllerTests
     [Fact]
     public async Task DeleteUser_WhenDeleteFails_Returns404()
     {
-        // Arrange - BRANCH: deleted == false
+        // Arrange 
         var sut = CreateSut();
         _userService.Setup(s => s.GetUserByIdAsync(1)).ReturnsAsync(new Volunteer { Id = 1 });
         _userService.Setup(s => s.DeleteUserAsync(1)).ReturnsAsync(false);
@@ -485,7 +485,7 @@ public class UsersApiControllerTests
     [Fact]
     public async Task DeleteUser_WhenValid_Returns200()
     {
-        // Arrange - BRANCH: deleted == true
+        // Arrange 
         var sut = CreateSut();
         _userService.Setup(s => s.GetUserByIdAsync(1)).ReturnsAsync(new Volunteer { Id = 1 });
         _userService.Setup(s => s.DeleteUserAsync(1)).ReturnsAsync(true);
@@ -516,14 +516,14 @@ public class UsersApiControllerTests
         statusCodeResult.StatusCode.Should().Be(500);
     }
 
-    #endregion
+   
 
-    #region ActivateUser - Branch Coverage Tests
+    
 
     [Fact]
     public async Task ActivateUser_WhenUserNotFound_Returns404()
     {
-        // Arrange - BRANCH: activated == false
+        // Arrange 
         var sut = CreateSut();
         _userService.Setup(s => s.ActivateUserAsync(999)).ReturnsAsync(false);
 
@@ -540,7 +540,7 @@ public class UsersApiControllerTests
     [Fact]
     public async Task ActivateUser_WhenValid_Returns200()
     {
-        // Arrange - BRANCH: activated == true
+        // Arrange 
         var sut = CreateSut();
         _userService.Setup(s => s.ActivateUserAsync(1)).ReturnsAsync(true);
 
@@ -570,14 +570,14 @@ public class UsersApiControllerTests
         statusCodeResult.StatusCode.Should().Be(500);
     }
 
-    #endregion
+    
 
-    #region DeactivateUser - Branch Coverage Tests
+    
 
     [Fact]
     public async Task DeactivateUser_WhenUserNotFound_Returns404()
     {
-        // Arrange - BRANCH: deactivated == false
+        // Arrange 
         var sut = CreateSut();
         _userService.Setup(s => s.DeactivateUserAsync(999)).ReturnsAsync(false);
 
@@ -594,7 +594,7 @@ public class UsersApiControllerTests
     [Fact]
     public async Task DeactivateUser_WhenValid_Returns200()
     {
-        // Arrange - BRANCH: deactivated == true
+        // Arrange 
         var sut = CreateSut();
         _userService.Setup(s => s.DeactivateUserAsync(1)).ReturnsAsync(true);
 
@@ -624,5 +624,5 @@ public class UsersApiControllerTests
         statusCodeResult.StatusCode.Should().Be(500);
     }
 
-    #endregion
+    
 }

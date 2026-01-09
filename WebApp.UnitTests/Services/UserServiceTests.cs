@@ -380,7 +380,7 @@ public class UserServiceTests
 
         public override Task<bool> ApproveAsync(ApplicationStateContext context, string? reviewNotes)
         {
-            // emulate state transition effect
+            
             context.Application.ReviewNotes = reviewNotes;
             return Task.FromResult(true);
         }
