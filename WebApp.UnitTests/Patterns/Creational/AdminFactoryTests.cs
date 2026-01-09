@@ -6,7 +6,7 @@ namespace WebApp.UnitTests.Patterns.Creational;
 
 public class AdminFactoryTests
 {
-    #region SupportedRole Tests
+   
 
     [Fact]
     public void SupportedRole_ReturnsAdmin()
@@ -21,9 +21,9 @@ public class AdminFactoryTests
         supportedRole.Should().Be(UserRole.Admin);
     }
 
-    #endregion
+ 
 
-    #region CreateUser Tests
+    
 
     [Fact]
     public void CreateUser_CreatesAdminWithCorrectBasicProperties()
@@ -184,16 +184,16 @@ public class AdminFactoryTests
         var result = factory.CreateUser("newadmin@example.com", "New", "Admin", "999999999");
         var admin = (Admin)result;
 
-        // Assert - Security rule: all permission flags must be false for new admins
+        // Assert 
         var allPermissionsFalse = !admin.CanManageUsers && 
                                    !admin.CanManageOrganizations && 
                                    !admin.CanManageProjects;
         allPermissionsFalse.Should().BeTrue("security rule: new admins must have all permissions disabled");
     }
 
-    #endregion
+  
 
-    #region Integration with UserFactoryProvider Tests
+   
 
     [Fact]
     public void CreateUser_CanBeUsedByUserFactoryProvider()
@@ -224,7 +224,7 @@ public class AdminFactoryTests
         var admin2 = factory.CreateUser("admin2@example.com", "Admin", "Two", "222222222") as Admin;
         var admin3 = factory.CreateUser("admin3@example.com", "Admin", "Three", "333333333") as Admin;
 
-        // Assert - Verify business rule consistency across multiple instances
+        // Assert 
         var allAdminsHaveNoPermissions = 
             admin1!.CanManageUsers == false &&
             admin2!.CanManageOrganizations == false &&
@@ -233,5 +233,5 @@ public class AdminFactoryTests
         allAdminsHaveNoPermissions.Should().BeTrue("business rule: all new admins must be created without permissions");
     }
 
-    #endregion
+ 
 }

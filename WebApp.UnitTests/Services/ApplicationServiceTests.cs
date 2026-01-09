@@ -22,12 +22,12 @@ public class ApplicationServiceTests
     private readonly Mock<IVolunteerRepository> _volunteerRepo = new();
     private readonly Mock<IProjectRepository> _projectRepo = new();
     
-    // Use real state pattern with controlled application status
+    
     private Application _testApplication = null!;
 
     private ApplicationService CreateSut()
     {
-        // Create fresh application for each test
+        
         _testApplication = new Application { Id = 1, Status = ApplicationStatus.Pending };
         
         _unitOfWork.SetupGet(x => x.Applications).Returns(_appRepo.Object);
@@ -35,7 +35,7 @@ public class ApplicationServiceTests
         _unitOfWork.SetupGet(x => x.Projects).Returns(_projectRepo.Object);
         _unitOfWork.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
         
-        // Use real state context factory
+        
         var stateFactory = new ApplicationStateFactory(new Mock<ILogger<ApplicationStateContext>>().Object);
         var realFactory = new ApplicationStateContextFactory(
             stateFactory,
@@ -52,7 +52,7 @@ public class ApplicationServiceTests
             _logger.Object);
     }
 
-    #region Constructor Tests
+    
 
     [Fact]
     public void Constructor_WhenUnitOfWorkIsNull_ThrowsArgumentNullException()
@@ -134,9 +134,9 @@ public class ApplicationServiceTests
             .WithParameterName("logger");
     }
 
-    #endregion
+    
 
-    #region CreateApplicationAsync Tests
+    
 
     [Fact]
     public async Task CreateApplicationAsync_WhenCannotApplyToProject_ThrowsInvalidOperationException()
@@ -197,16 +197,16 @@ public class ApplicationServiceTests
         // Act
         await sut.CreateApplicationAsync(1, 1);
 
-        // Assert - Decorator Pattern integration
+        // Assert 
         _notificationService.Verify(
             n => n.NotifyApplicationSubmittedAsync(It.IsAny<Application>()),
             Times.Once,
             "notification decorator should be called when application is submitted");
     }
 
-    #endregion
+    
 
-    #region DeleteApplicationAsync Tests
+    
 
     [Fact]
     public async Task DeleteApplicationAsync_WhenApplicationNotFound_ReturnsFalse()
@@ -275,9 +275,8 @@ public class ApplicationServiceTests
             "volunteer count should not change for non-accepted applications");
     }
 
-    #endregion
+    
 
-    #region GetApplicationByIdAsync Tests
 
     [Fact]
     public async Task GetApplicationByIdAsync_WhenApplicationExists_ReturnsApplication()
@@ -393,9 +392,9 @@ public class ApplicationServiceTests
         result.Should().OnlyContain(a => a.ProjectId == 1 && a.Status == ApplicationStatus.Pending);
     }
 
-    #endregion
+    
 
-    #region ApproveApplicationAsync Tests
+    
 
     [Fact]
     public async Task ApproveApplicationAsync_WhenApplicationNotFound_ReturnsFalse()
@@ -428,10 +427,10 @@ public class ApplicationServiceTests
         result.Should().BeTrue();
         application.Status.Should().Be(ApplicationStatus.Accepted, "state should transition to Accepted");
         
-        // Business rule: increment volunteer count
+        
         _projectService.Verify(s => s.IncrementVolunteerCountAsync(1), Times.Once);
         
-        // Decorator Pattern integration
+        
         _notificationService.Verify(n => n.NotifyApplicationApprovedAsync(application), Times.Once);
         
         _appRepo.Verify(r => r.Update(application), Times.Once);
@@ -457,9 +456,9 @@ public class ApplicationServiceTests
         _notificationService.Verify(n => n.NotifyApplicationApprovedAsync(It.IsAny<Application>()), Times.Never);
     }
 
-    #endregion
+   
 
-    #region RejectApplicationAsync Tests
+    
 
     [Fact]
     public async Task RejectApplicationAsync_WhenApplicationNotFound_ReturnsFalse()
@@ -490,7 +489,7 @@ public class ApplicationServiceTests
         result.Should().BeTrue();
         application.Status.Should().Be(ApplicationStatus.Rejected, "state should transition to Rejected");
         
-        // Decorator Pattern integration
+      
         _notificationService.Verify(n => n.NotifyApplicationRejectedAsync(application), Times.Once);
         
         _appRepo.Verify(r => r.Update(application), Times.Once);
@@ -513,9 +512,9 @@ public class ApplicationServiceTests
         _notificationService.Verify(n => n.NotifyApplicationRejectedAsync(It.IsAny<Application>()), Times.Never);
     }
 
-    #endregion
+    
 
-    #region WithdrawApplicationAsync Tests
+    
 
     [Fact]
     public async Task WithdrawApplicationAsync_WhenApplicationNotFound_ReturnsFalse()
@@ -551,10 +550,10 @@ public class ApplicationServiceTests
         result.Should().BeTrue();
         application.Status.Should().Be(ApplicationStatus.Withdrawn, "state should transition to Withdrawn");
         
-        // Business rule: decrement count for accepted applications
+        
         _projectService.Verify(s => s.DecrementVolunteerCountAsync(1), Times.Once);
         
-        // Decorator Pattern integration
+       
         _notificationService.Verify(n => n.NotifyApplicationWithdrawnAsync(application), Times.Once);
     }
 
@@ -677,9 +676,9 @@ public class ApplicationServiceTests
         result.Should().BeTrue("all conditions are met");
     }
 
-    #endregion
+    
 
-    #region CanApproveApplicationAsync Tests
+    
 
     [Fact]
     public async Task CanApproveApplicationAsync_WhenApplicationNotFound_ReturnsFalse()
@@ -744,9 +743,9 @@ public class ApplicationServiceTests
         result.Should().BeTrue("all conditions are met");
     }
 
-    #endregion
+    
 
-    #region CanRejectApplicationAsync Tests
+    
 
     [Fact]
     public async Task CanRejectApplicationAsync_WhenApplicationNotFound_ReturnsFalse()
@@ -792,9 +791,9 @@ public class ApplicationServiceTests
         result.Should().BeFalse("withdrawn applications cannot be rejected");
     }
 
-    #endregion
+    
 
-    #region CanWithdrawApplicationAsync Tests
+    
 
     [Fact]
     public async Task CanWithdrawApplicationAsync_WhenApplicationNotFound_ReturnsFalse()
@@ -855,9 +854,9 @@ public class ApplicationServiceTests
         result.Should().BeTrue("pending applications can be withdrawn");
     }
 
-    #endregion
+   
 
-    #region Error Handling Tests
+    
 
     [Fact]
     public async Task CreateApplicationAsync_WhenRepositoryThrows_RethrowsException()
@@ -936,5 +935,5 @@ public class ApplicationServiceTests
             .WithMessage("Approve failed");
     }
 
-    #endregion
+    
 }

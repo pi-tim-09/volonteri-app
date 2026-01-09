@@ -22,7 +22,7 @@ public class ApiResponseTests
         var resp = ApiResponse<int>.ErrorResponse("bad", new List<string> { "e1" });
 
         resp.Success.Should().BeFalse();
-        resp.Data.Should().Be(default(int)); // value type default (0)
+        resp.Data.Should().Be(default(int)); 
         resp.Message.Should().Be("bad");
         resp.Errors.Should().BeEquivalentTo(new[] { "e1" });
     }

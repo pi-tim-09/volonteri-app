@@ -36,7 +36,7 @@ public class VolunteerProfileDecoratorTests
         act.Should().Throw<ArgumentNullException>();
     }
 
-    #region BasicVolunteerProfileService Tests
+    
 
     [Fact]
     public async Task BasicVolunteerProfileService_GetVolunteerProfileAsync_ReturnsVolunteer()
@@ -63,9 +63,9 @@ public class VolunteerProfileDecoratorTests
         summary.Should().Contain("a@a.com");
     }
 
-    #endregion
+    
 
-    #region LoggingVolunteerProfileDecorator Tests
+   
 
     [Fact]
     public async Task LoggingVolunteerProfileDecorator_GetVolunteerProfileAsync_DelegatesToInner()
@@ -97,9 +97,9 @@ public class VolunteerProfileDecoratorTests
         inner.Verify(x => x.FormatVolunteerSummaryAsync(v), Times.Once);
     }
 
-    #endregion
+   
 
-    #region EnrichedVolunteerProfileDecorator Tests
+  
 
     [Fact]
     public async Task EnrichedVolunteerProfileDecorator_GetVolunteerProfileAsync_DelegatesToInner()
@@ -169,9 +169,9 @@ public class VolunteerProfileDecoratorTests
         summary.Should().Contain("Hours: 0");
     }
 
-    #endregion
+ 
 
-    #region ValidatingVolunteerProfileDecorator Tests
+    
 
     [Fact]
     public async Task ValidatingVolunteerProfileDecorator_GetVolunteerProfileAsync_WhenIdZero_ThrowsArgumentException()
@@ -253,5 +253,5 @@ public class VolunteerProfileDecoratorTests
         inner.Verify(x => x.FormatVolunteerSummaryAsync(v), Times.Once);
     }
 
-    #endregion
+    
 }

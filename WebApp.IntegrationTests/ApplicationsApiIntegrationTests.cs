@@ -20,7 +20,7 @@ public class ApplicationsApiIntegrationTests : IClassFixture<CustomWebApplicatio
         _client = factory.CreateClient();
     }
 
-    #region Helper Methods
+   
 
     private async Task<Volunteer> CreateTestVolunteerInDb(string email = "volunteer@example.com")
     {
@@ -89,9 +89,9 @@ public class ApplicationsApiIntegrationTests : IClassFixture<CustomWebApplicatio
         return application;
     }
 
-    #endregion
+    
 
-    #region GET /api/applications Tests
+    
 
     [Fact]
     public async Task GetApplications_Returns200()
@@ -157,9 +157,9 @@ public class ApplicationsApiIntegrationTests : IClassFixture<CustomWebApplicatio
         apiResponse!.Data!.Applications.Should().OnlyContain(a => a.Status == ApplicationStatus.Pending);
     }
 
-    #endregion
+    
 
-    #region GET /api/applications/{id} Tests
+    
 
     [Fact]
     public async Task GetApplication_WhenExists_Returns200()
@@ -191,9 +191,9 @@ public class ApplicationsApiIntegrationTests : IClassFixture<CustomWebApplicatio
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    #endregion
+  
 
-    #region POST /api/applications Tests
+    
 
     [Fact]
     public async Task CreateApplication_WhenValid_Returns201()
@@ -270,9 +270,9 @@ public class ApplicationsApiIntegrationTests : IClassFixture<CustomWebApplicatio
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    #endregion
+    
 
-    #region PATCH /api/applications/{id}/approve Tests
+   
 
     [Fact]
     public async Task ApproveApplication_WhenValid_Returns200()
@@ -294,7 +294,7 @@ public class ApplicationsApiIntegrationTests : IClassFixture<CustomWebApplicatio
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // Verify status changed and volunteer count incremented
+        
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         context.ChangeTracker.Clear();
@@ -327,9 +327,9 @@ public class ApplicationsApiIntegrationTests : IClassFixture<CustomWebApplicatio
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    #endregion
+   
 
-    #region PATCH /api/applications/{id}/reject Tests
+    
 
     [Fact]
     public async Task RejectApplication_WhenValid_Returns200()
@@ -360,9 +360,9 @@ public class ApplicationsApiIntegrationTests : IClassFixture<CustomWebApplicatio
         updatedApp!.Status.Should().Be(ApplicationStatus.Rejected);
     }
 
-    #endregion
+    
 
-    #region PATCH /api/applications/{id}/withdraw Tests
+    
 
     [Fact]
     public async Task WithdrawApplication_WhenPending_Returns200()
@@ -378,7 +378,7 @@ public class ApplicationsApiIntegrationTests : IClassFixture<CustomWebApplicatio
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // Verify status changed
+        
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         context.ChangeTracker.Clear();
@@ -395,7 +395,7 @@ public class ApplicationsApiIntegrationTests : IClassFixture<CustomWebApplicatio
         var project = await CreateTestProjectInDb();
         var application = await CreateTestApplicationInDb(volunteer.Id, project.Id, ApplicationStatus.Accepted);
         
-        // Set volunteer count
+        
         using (var scope = _factory.Services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -410,7 +410,7 @@ public class ApplicationsApiIntegrationTests : IClassFixture<CustomWebApplicatio
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // Verify count decremented
+        
         using var verifyScope = _factory.Services.CreateScope();
         var verifyContext = verifyScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         verifyContext.ChangeTracker.Clear();
@@ -419,9 +419,9 @@ public class ApplicationsApiIntegrationTests : IClassFixture<CustomWebApplicatio
         updatedProject!.CurrentVolunteers.Should().Be(0);
     }
 
-    #endregion
+    
 
-    #region DELETE /api/applications/{id} Tests
+    
 
     [Fact]
     public async Task DeleteApplication_WhenExists_Returns200()
@@ -437,7 +437,7 @@ public class ApplicationsApiIntegrationTests : IClassFixture<CustomWebApplicatio
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // Verify deleted
+        
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var deleted = await context.Applications.FindAsync(application.Id);
@@ -454,18 +454,18 @@ public class ApplicationsApiIntegrationTests : IClassFixture<CustomWebApplicatio
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    #endregion
+  
 
-    #region End-to-End Workflow Tests
+    
 
     [Fact]
     public async Task CompleteApplicationLifecycle_WorksEndToEnd()
     {
-        // 1. Create volunteer and project
+        
         var volunteer = await CreateTestVolunteerInDb($"lifecycle{Guid.NewGuid():N}@example.com");
         var project = await CreateTestProjectInDb();
 
-        // 2. Create application
+      
         var createRequest = new CreateApplicationRequest
         {
             VolunteerId = volunteer.Id,
@@ -478,10 +478,10 @@ public class ApplicationsApiIntegrationTests : IClassFixture<CustomWebApplicatio
         var createdApp = await createResponse.Content.ReadFromJsonAsync<ApiResponse<ApplicationDto>>();
         var appId = createdApp!.Data!.Id;
 
-        // 3. Verify application is pending
+        
         createdApp.Data.Status.Should().Be(ApplicationStatus.Pending);
 
-        // 4. Approve application
+       
         var approveRequest = new ReviewApplicationRequest
         {
             Status = ApplicationStatus.Accepted,
@@ -491,7 +491,7 @@ public class ApplicationsApiIntegrationTests : IClassFixture<CustomWebApplicatio
         var approveResponse = await _client.PatchAsync($"/api/applications/{appId}/approve", JsonContent.Create(approveRequest));
         approveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // 5. Verify application approved and volunteer count incremented
+        
         using (var scope = _factory.Services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -502,11 +502,11 @@ public class ApplicationsApiIntegrationTests : IClassFixture<CustomWebApplicatio
             proj!.CurrentVolunteers.Should().Be(1);
         }
 
-        // 6. Withdraw application
+        
         var withdrawResponse = await _client.PatchAsync($"/api/applications/{appId}/withdraw?volunteerId={volunteer.Id}", null);
         withdrawResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // 7. Verify withdrawn and count decremented
+        
         using (var scope = _factory.Services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -520,5 +520,5 @@ public class ApplicationsApiIntegrationTests : IClassFixture<CustomWebApplicatio
         }
     }
 
-    #endregion
+   
 }

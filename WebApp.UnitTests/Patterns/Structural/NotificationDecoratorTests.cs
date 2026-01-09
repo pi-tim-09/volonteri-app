@@ -47,7 +47,7 @@ public class NotificationDecoratorTests
         await svc.NotifyApplicationWithdrawnAsync(new Application());
     }
 
-    #region LoggingNotificationDecorator Tests
+ 
 
     [Fact]
     public async Task LoggingNotificationDecorator_NotifyApplicationSubmittedAsync_DelegatesToInner()
@@ -105,9 +105,9 @@ public class NotificationDecoratorTests
         inner.Verify(x => x.NotifyApplicationWithdrawnAsync(app), Times.Once);
     }
 
-    #endregion
+   
 
-    #region EmailNotificationDecorator Tests
+   
 
     [Fact]
     public async Task EmailNotificationDecorator_NotifyApplicationApprovedAsync_DelegatesToInner()
@@ -207,9 +207,9 @@ public class NotificationDecoratorTests
         inner.Verify(x => x.NotifyApplicationApprovedAsync(app), Times.Once);
     }
 
-    #endregion
+    
 
-    #region StatisticsNotificationDecorator Tests
+    
 
     [Fact]
     public async Task StatisticsNotificationDecorator_NotifyApplicationApprovedAsync_DelegatesToInner()
@@ -267,5 +267,5 @@ public class NotificationDecoratorTests
         inner.Verify(x => x.NotifyApplicationWithdrawnAsync(app), Times.Once);
     }
 
-    #endregion
+    
 }

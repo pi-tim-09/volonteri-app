@@ -25,7 +25,7 @@ public class OrganizationsApiControllerTests
             _logger.Object);
     }
 
-    #region GetOrganizations Tests
+    
 
     [Fact]
     public async Task GetOrganizations_WhenOrganizationsExist_Returns200WithOrganizations()
@@ -89,9 +89,9 @@ public class OrganizationsApiControllerTests
         response.Message.Should().Be("Failed to retrieve organizations");
     }
 
-    #endregion
+    
 
-    #region GetOrganization Tests
+    
 
     [Fact]
     public async Task GetOrganization_WhenOrganizationExists_Returns200WithOrganization()
@@ -161,9 +161,9 @@ public class OrganizationsApiControllerTests
         statusCodeResult.StatusCode.Should().Be(500);
     }
 
-    #endregion
+    
 
-    #region CreateOrganization Tests
+    
 
     [Fact]
     public async Task CreateOrganization_WhenModelStateInvalid_Returns400()
@@ -289,9 +289,9 @@ public class OrganizationsApiControllerTests
         statusCodeResult.StatusCode.Should().Be(500);
     }
 
-    #endregion
+   
 
-    #region UpdateOrganization Tests
+    
 
     [Fact]
     public async Task UpdateOrganization_WhenModelStateInvalid_Returns400()
@@ -415,9 +415,9 @@ public class OrganizationsApiControllerTests
         statusCodeResult.StatusCode.Should().Be(500);
     }
 
-    #endregion
+    
 
-    #region DeleteOrganization Tests
+    
 
     [Fact]
     public async Task DeleteOrganization_WhenOrganizationNotFound_Returns404()
@@ -492,9 +492,9 @@ public class OrganizationsApiControllerTests
         statusCodeResult.StatusCode.Should().Be(500);
     }
 
-    #endregion
+    
 
-    #region VerifyOrganization Tests
+    
 
     [Fact]
     public async Task VerifyOrganization_WhenOrganizationNotFound_Returns404()
@@ -547,9 +547,9 @@ public class OrganizationsApiControllerTests
         statusCodeResult.StatusCode.Should().Be(500);
     }
 
-    #endregion
+    
 
-    #region UnverifyOrganization Tests
+    
 
     [Fact]
     public async Task UnverifyOrganization_WhenOrganizationNotFound_Returns404()
@@ -602,5 +602,5 @@ public class OrganizationsApiControllerTests
         statusCodeResult.StatusCode.Should().Be(500);
     }
 
-    #endregion
+    
 }

@@ -32,7 +32,7 @@ public class AccountControllerTests
         return controller;
     }
 
-    #region Existing Tests
+    
 
     [Fact]
     public void Register_Get_ReturnsView()
@@ -128,9 +128,9 @@ public class AccountControllerTests
         sut.ModelState.ErrorCount.Should().BeGreaterThan(0);
     }
 
-    #endregion
+   
 
-    #region Additional Register Tests
+    
 
     [Fact]
     public async Task Register_Post_WhenValid_CreatesVolunteerAndRedirects()
@@ -165,9 +165,9 @@ public class AccountControllerTests
         _uow.Verify(u => u.SaveChangesAsync(), Times.Once);
     }
 
-    #endregion
+    
 
-    #region Additional Login Tests
+    
 
     [Fact]
     public async Task Login_Post_WhenModelInvalid_ReturnsViewWithModel()
@@ -191,8 +191,7 @@ public class AccountControllerTests
         // Arrange
         var sut = CreateSut();
         
-        // The controller checks IsActive in the query: FirstOrDefaultAsync(u => u.Email == model.Email && u.IsActive)
-        // So if user is inactive, it will return null
+        
         _volRepo.Setup(r => r.FirstOrDefaultAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Volunteer, bool>>>()))
             .ReturnsAsync((Volunteer?)null);
 
@@ -206,22 +205,21 @@ public class AccountControllerTests
         sut.ModelState.ErrorCount.Should().BeGreaterThan(0);
     }
 
-    #endregion
+   
 
-    #region Logout Tests
+    
 
     [Fact]
     public void Logout_IsAsyncMethod()
     {
-        // This test just verifies Logout exists and is async
-        // We can't easily test the actual SignOutAsync without complex auth setup
+        
         var sut = CreateSut();
         
-        // Verify the method exists by getting the MethodInfo
+        
         var logoutMethod = typeof(AccountController).GetMethod("Logout");
         logoutMethod.Should().NotBeNull();
         logoutMethod!.ReturnType.Should().Be(typeof(System.Threading.Tasks.Task<IActionResult>));
     }
 
-    #endregion
+  
 }

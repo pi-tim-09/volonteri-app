@@ -20,7 +20,7 @@ public class ProjectsApiIntegrationTests : IClassFixture<CustomWebApplicationFac
         _client = factory.CreateClient();
     }
 
-    #region Helper Methods
+    
 
     private async Task<Organization> CreateTestOrganizationInDb(string email = "testorg@example.com", bool verified = true)
     {
@@ -78,9 +78,9 @@ public class ProjectsApiIntegrationTests : IClassFixture<CustomWebApplicationFac
         return project;
     }
 
-    #endregion
+ 
 
-    #region GET /api/projects Tests
+   
 
     [Fact]
     public async Task GetProjects_Returns200()
@@ -129,9 +129,9 @@ public class ProjectsApiIntegrationTests : IClassFixture<CustomWebApplicationFac
         apiResponse!.Data!.Projects.Should().OnlyContain(p => p.OrganizationId == org1.Id);
     }
 
-    #endregion
+   
 
-    #region GET /api/projects/{id} Tests
+    
 
     [Fact]
     public async Task GetProject_WhenExists_Returns200()
@@ -161,9 +161,9 @@ public class ProjectsApiIntegrationTests : IClassFixture<CustomWebApplicationFac
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    #endregion
+    
 
-    #region POST /api/projects Tests
+    
 
     [Fact]
     public async Task CreateProject_WhenValid_Returns201()
@@ -222,9 +222,9 @@ public class ProjectsApiIntegrationTests : IClassFixture<CustomWebApplicationFac
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    #endregion
+    
 
-    #region PUT /api/projects/{id} Tests
+   
 
     [Fact]
     public async Task UpdateProject_WhenValid_Returns200()
@@ -255,7 +255,7 @@ public class ProjectsApiIntegrationTests : IClassFixture<CustomWebApplicationFac
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // Verify in database
+       
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var updated = await context.Projects.FindAsync(project.Id);
@@ -290,9 +290,9 @@ public class ProjectsApiIntegrationTests : IClassFixture<CustomWebApplicationFac
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    #endregion
+   
 
-    #region DELETE /api/projects/{id} Tests
+    
 
     [Fact]
     public async Task DeleteProject_WhenNoAcceptedApplications_Returns200()
@@ -307,7 +307,7 @@ public class ProjectsApiIntegrationTests : IClassFixture<CustomWebApplicationFac
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // Verify deleted
+      
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var deleted = await context.Projects.FindAsync(project.Id);
@@ -324,9 +324,9 @@ public class ProjectsApiIntegrationTests : IClassFixture<CustomWebApplicationFac
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    #endregion
+   
 
-    #region PATCH /api/projects/{id}/publish Tests
+  
 
     [Fact]
     public async Task PublishProject_WhenValidDraft_Returns200()
@@ -341,7 +341,7 @@ public class ProjectsApiIntegrationTests : IClassFixture<CustomWebApplicationFac
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // Verify published
+       
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         context.ChangeTracker.Clear();
@@ -364,9 +364,9 @@ public class ProjectsApiIntegrationTests : IClassFixture<CustomWebApplicationFac
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    #endregion
+    
 
-    #region PATCH /api/projects/{id}/complete Tests
+   
 
     [Fact]
     public async Task CompleteProject_WhenPublished_Returns200()
@@ -381,7 +381,7 @@ public class ProjectsApiIntegrationTests : IClassFixture<CustomWebApplicationFac
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // Verify completed
+       
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         context.ChangeTracker.Clear();
@@ -390,9 +390,9 @@ public class ProjectsApiIntegrationTests : IClassFixture<CustomWebApplicationFac
         completed!.Status.Should().Be(ProjectStatus.Completed);
     }
 
-    #endregion
+    
 
-    #region PATCH /api/projects/{id}/cancel Tests
+    
 
     [Fact]
     public async Task CancelProject_WhenValid_Returns200()
@@ -407,7 +407,7 @@ public class ProjectsApiIntegrationTests : IClassFixture<CustomWebApplicationFac
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // Verify cancelled
+      
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         context.ChangeTracker.Clear();
@@ -416,17 +416,17 @@ public class ProjectsApiIntegrationTests : IClassFixture<CustomWebApplicationFac
         cancelled!.Status.Should().Be(ProjectStatus.Cancelled);
     }
 
-    #endregion
+  
 
-    #region End-to-End Workflow Tests
+    
 
     [Fact]
     public async Task CompleteProjectLifecycle_WorksEndToEnd()
     {
-        // 1. Create organization
+       
         var org = await CreateTestOrganizationInDb($"lifecycle{Guid.NewGuid():N}@example.com");
 
-        // 2. Create project
+        
         var createRequest = new CreateProjectRequest
         {
             Title = "Lifecycle Project",
@@ -448,14 +448,14 @@ public class ProjectsApiIntegrationTests : IClassFixture<CustomWebApplicationFac
         var createdProject = await createResponse.Content.ReadFromJsonAsync<ApiResponse<ProjectDto>>();
         var projectId = createdProject!.Data!.Id;
 
-        // 3. Verify project starts as draft
+       
         createdProject.Data.Status.Should().Be(ProjectStatus.Draft);
 
-        // 4. Publish project
+    
         var publishResponse = await _client.PatchAsync($"/api/projects/{projectId}/publish", null);
         publishResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // 5. Verify published
+       
         using (var scope = _factory.Services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -463,7 +463,7 @@ public class ProjectsApiIntegrationTests : IClassFixture<CustomWebApplicationFac
             proj!.Status.Should().Be(ProjectStatus.Published);
         }
 
-        // 6. Update project
+       
         var updateRequest = new UpdateProjectRequest
         {
             Title = "Updated Lifecycle Project",
@@ -483,16 +483,16 @@ public class ProjectsApiIntegrationTests : IClassFixture<CustomWebApplicationFac
         var updateResponse = await _client.PutAsJsonAsync($"/api/projects/{projectId}", updateRequest);
         updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // 7. Complete project
+       
         var completeResponse = await _client.PatchAsync($"/api/projects/{projectId}/complete", null);
         completeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // 8. Verify completed
+       
         var getResponse = await _client.GetAsync($"/api/projects/{projectId}");
         var finalProject = await getResponse.Content.ReadFromJsonAsync<ApiResponse<ProjectDto>>();
         finalProject!.Data!.Status.Should().Be(ProjectStatus.Completed);
         finalProject.Data.Title.Should().Be("Updated Lifecycle Project");
     }
 
-    #endregion
+    
 }

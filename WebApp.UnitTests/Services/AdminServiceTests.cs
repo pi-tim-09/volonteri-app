@@ -349,7 +349,7 @@ public class AdminServiceTests
         ok.Should().BeTrue();
     }
 
-    #region Error Handling Tests
+    
 
     [Fact]
     public async Task CreateAdminAsync_WhenRepositoryThrows_RethrowsException()
@@ -555,5 +555,5 @@ public class AdminServiceTests
             .WithMessage("Count failed");
     }
 
-    #endregion
+    
 }

@@ -20,7 +20,7 @@ public class AdminsApiIntegrationTests : IClassFixture<CustomWebApplicationFacto
         _client = factory.CreateClient();
     }
 
-    #region Helper Methods
+  
 
     private async Task<Admin> CreateTestAdminInDb(string email = "testadmin@example.com")
     {
@@ -48,9 +48,7 @@ public class AdminsApiIntegrationTests : IClassFixture<CustomWebApplicationFacto
         return admin;
     }
 
-    #endregion
-
-    #region GET /api/admins Tests
+   
 
     [Fact]
     public async Task GetAdmins_Returns200()
@@ -83,9 +81,7 @@ public class AdminsApiIntegrationTests : IClassFixture<CustomWebApplicationFacto
         apiResponse.Data.TotalCount.Should().BeGreaterThan(0);
     }
 
-    #endregion
-
-    #region GET /api/admins/{id} Tests
+   
 
     [Fact]
     public async Task GetAdmin_WhenExists_Returns200()
@@ -123,9 +119,7 @@ public class AdminsApiIntegrationTests : IClassFixture<CustomWebApplicationFacto
         apiResponse.Message.Should().Contain("not found");
     }
 
-    #endregion
-
-    #region POST /api/admins Tests
+   
 
     [Fact]
     public async Task CreateAdmin_WhenValid_Returns201()
@@ -187,9 +181,7 @@ public class AdminsApiIntegrationTests : IClassFixture<CustomWebApplicationFacto
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    #endregion
-
-    #region PUT /api/admins/{id} Tests
+   
 
     [Fact]
     public async Task UpdateAdmin_WhenValid_Returns200()
@@ -219,7 +211,7 @@ public class AdminsApiIntegrationTests : IClassFixture<CustomWebApplicationFacto
         apiResponse.Should().NotBeNull();
         apiResponse!.Success.Should().BeTrue();
 
-        // Verify in database - permissions should NOT be updated via this endpoint
+        
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var updatedAdmin = await context.Admins.FindAsync(admin.Id);
@@ -250,14 +242,12 @@ public class AdminsApiIntegrationTests : IClassFixture<CustomWebApplicationFacto
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    #endregion
-
-    #region DELETE /api/admins/{id} Tests
+   
 
     [Fact]
     public async Task DeleteAdmin_WhenNotLastAdmin_Returns200()
     {
-        // Arrange - Create 2 admins so we can delete one
+        // Arrange 
         var admin1 = await CreateTestAdminInDb("admin1@example.com");
         var admin2 = await CreateTestAdminInDb("admin2@example.com");
 
@@ -271,7 +261,7 @@ public class AdminsApiIntegrationTests : IClassFixture<CustomWebApplicationFacto
         apiResponse.Should().NotBeNull();
         apiResponse!.Success.Should().BeTrue();
 
-        // Verify deleted from database
+        
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var deletedAdmin = await context.Admins.FindAsync(admin1.Id);
@@ -285,12 +275,12 @@ public class AdminsApiIntegrationTests : IClassFixture<CustomWebApplicationFacto
         using (var setupScope = _factory.Services.CreateScope())
         {
             var setupContext = setupScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            // Clear all admins first
+            
             setupContext.Admins.RemoveRange(setupContext.Admins);
             await setupContext.SaveChangesAsync();
         }
 
-        // Create only one admin
+       
         var admin = await CreateTestAdminInDb("onlyadmin@example.com");
 
         // Act
@@ -299,7 +289,7 @@ public class AdminsApiIntegrationTests : IClassFixture<CustomWebApplicationFacto
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.InternalServerError, "deleting the last admin should throw an exception that returns 500");
 
-        // Verify NOT deleted from database
+        
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var stillExists = await context.Admins.FindAsync(admin.Id);
@@ -316,9 +306,7 @@ public class AdminsApiIntegrationTests : IClassFixture<CustomWebApplicationFacto
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    #endregion
-
-    #region Permission Management Tests
+    
 
     [Fact]
     public async Task GrantUserManagementPermission_WhenValid_Returns200()
@@ -332,7 +320,7 @@ public class AdminsApiIntegrationTests : IClassFixture<CustomWebApplicationFacto
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // Verify in database
+      
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         context.ChangeTracker.Clear();
@@ -346,7 +334,7 @@ public class AdminsApiIntegrationTests : IClassFixture<CustomWebApplicationFacto
         // Arrange
         var admin = await CreateTestAdminInDb();
         
-        // Grant first
+        
         await _client.PatchAsync($"/api/admins/{admin.Id}/permissions/users/grant", null);
 
         // Act - Revoke
@@ -355,7 +343,7 @@ public class AdminsApiIntegrationTests : IClassFixture<CustomWebApplicationFacto
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // Verify in database
+        
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         context.ChangeTracker.Clear();
@@ -398,7 +386,7 @@ public class AdminsApiIntegrationTests : IClassFixture<CustomWebApplicationFacto
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // Verify in database
+        
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         context.ChangeTracker.Clear();
@@ -418,7 +406,7 @@ public class AdminsApiIntegrationTests : IClassFixture<CustomWebApplicationFacto
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // Verify in database
+        
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         context.ChangeTracker.Clear();
@@ -432,7 +420,7 @@ public class AdminsApiIntegrationTests : IClassFixture<CustomWebApplicationFacto
         // Arrange
         var admin = await CreateTestAdminInDb();
         
-        // Grant first
+        
         await _client.PatchAsync($"/api/admins/{admin.Id}/permissions/projects/grant", null);
 
         // Act - Revoke
@@ -441,7 +429,7 @@ public class AdminsApiIntegrationTests : IClassFixture<CustomWebApplicationFacto
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // Verify in database
+        
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         context.ChangeTracker.Clear();
@@ -459,14 +447,12 @@ public class AdminsApiIntegrationTests : IClassFixture<CustomWebApplicationFacto
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    #endregion
-
-    #region End-to-End Workflow Tests
+    
 
     [Fact]
     public async Task CompleteAdminLifecycle_WorksEndToEnd()
     {
-        // 1. Create admin
+        
         var createRequest = new CreateAdminRequest
         {
             Email = $"lifecycle{Guid.NewGuid():N}@example.com",
@@ -483,17 +469,17 @@ public class AdminsApiIntegrationTests : IClassFixture<CustomWebApplicationFacto
         var createdAdmin = await createResponse.Content.ReadFromJsonAsync<ApiResponse<AdminDto>>();
         var adminId = createdAdmin!.Data!.Id;
 
-        // 2. Verify admin has no permissions initially
+        
         createdAdmin.Data.CanManageUsers.Should().BeFalse();
         createdAdmin.Data.CanManageOrganizations.Should().BeFalse();
         createdAdmin.Data.CanManageProjects.Should().BeFalse();
 
-        // 3. Grant all permissions
+        
         await _client.PatchAsync($"/api/admins/{adminId}/permissions/users/grant", null);
         await _client.PatchAsync($"/api/admins/{adminId}/permissions/organizations/grant", null);
         await _client.PatchAsync($"/api/admins/{adminId}/permissions/projects/grant", null);
 
-        // 4. Verify permissions granted
+        
         using (var scope = _factory.Services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -503,7 +489,7 @@ public class AdminsApiIntegrationTests : IClassFixture<CustomWebApplicationFacto
             admin.CanManageProjects.Should().BeTrue();
         }
 
-        // 5. Update admin (permissions should persist)
+        
         var updateRequest = new UpdateAdminRequest
         {
             Email = createRequest.Email,
@@ -516,7 +502,7 @@ public class AdminsApiIntegrationTests : IClassFixture<CustomWebApplicationFacto
 
         await _client.PutAsJsonAsync($"/api/admins/{adminId}", updateRequest);
 
-        // 6. Verify update didn't affect permissions
+       
         using (var scope = _factory.Services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -525,17 +511,17 @@ public class AdminsApiIntegrationTests : IClassFixture<CustomWebApplicationFacto
             admin.Department.Should().Be("HR");
         }
 
-        // 7. Create second admin (so we can delete the first)
+        
         var admin2 = await CreateTestAdminInDb("admin2@example.com");
 
-        // 8. Delete first admin
+        
         var deleteResponse = await _client.DeleteAsync($"/api/admins/{adminId}");
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // 9. Verify deletion
+       
         var getResponse = await _client.GetAsync($"/api/admins/{adminId}");
         getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    #endregion
+    
 }
