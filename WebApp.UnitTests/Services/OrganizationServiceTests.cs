@@ -626,4 +626,98 @@ public class OrganizationServiceTests
     }
 
     #endregion
+
+    #region Error Handling Tests
+
+    [Fact]
+    public async Task CreateOrganizationAsync_WhenRepositoryThrows_RethrowsException()
+    {
+        // Arrange
+        var sut = CreateSut();
+        var org = new Organization { Email = "test@example.com", OrganizationName = "Test", City = "Test" };
+        
+        _orgRepo.Setup(r => r.AddAsync(It.IsAny<Organization>()))
+            .ThrowsAsync(new InvalidOperationException("Database error"));
+
+        // Act
+        Func<Task> act = async () => await sut.CreateOrganizationAsync(org);
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Database error");
+    }
+
+    [Fact]
+    public async Task UpdateOrganizationAsync_WhenRepositoryThrows_RethrowsException()
+    {
+        // Arrange
+        var sut = CreateSut();
+        var existing = new Organization { Id = 1, Email = "old@test.com", OrganizationName = "Old" };
+        
+        _orgRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(existing);
+        _orgRepo.Setup(r => r.Update(It.IsAny<Organization>()))
+            .Throws(new InvalidOperationException("Update failed"));
+
+        // Act
+        Func<Task> act = async () => await sut.UpdateOrganizationAsync(1, new Organization { Email = "new@test.com" });
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Update failed");
+    }
+
+    [Fact]
+    public async Task GetOrganizationByIdAsync_WhenRepositoryThrows_RethrowsException()
+    {
+        // Arrange
+        var sut = CreateSut();
+        
+        _orgRepo.Setup(r => r.GetByIdAsync(1))
+            .ThrowsAsync(new InvalidOperationException("Get failed"));
+
+        // Act
+        Func<Task> act = async () => await sut.GetOrganizationByIdAsync(1);
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Get failed");
+    }
+
+    [Fact]
+    public async Task GetAllOrganizationsAsync_WhenRepositoryThrows_RethrowsException()
+    {
+        // Arrange
+        var sut = CreateSut();
+        
+        _orgRepo.Setup(r => r.GetAllAsync())
+            .ThrowsAsync(new InvalidOperationException("GetAll failed"));
+
+        // Act
+        Func<Task> act = async () => await sut.GetAllOrganizationsAsync();
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("GetAll failed");
+    }
+
+    [Fact]
+    public async Task VerifyOrganizationAsync_WhenRepositoryThrows_RethrowsException()
+    {
+        // Arrange
+        var sut = CreateSut();
+        var org = new Organization { Id = 1, OrganizationName = "Test", IsVerified = false };
+        
+        _orgRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(org);
+        _orgRepo.Setup(r => r.VerifyOrganizationAsync(1))
+            .ThrowsAsync(new InvalidOperationException("Verify failed"));
+
+        // Act
+        Func<Task> act = async () => await sut.VerifyOrganizationAsync(1);
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Verify failed");
+    }
+
+    #endregion
 }

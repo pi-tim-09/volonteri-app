@@ -23,8 +23,6 @@ public class ProjectServiceTests
         return new ProjectService(_unitOfWork.Object, _logger.Object);
     }
 
-    #region Constructor Tests
-
     [Fact]
     public void Constructor_WhenUnitOfWorkIsNull_ThrowsArgumentNullException()
     {
@@ -46,10 +44,6 @@ public class ProjectServiceTests
         act.Should().Throw<ArgumentNullException>()
             .WithParameterName("logger");
     }
-
-    #endregion
-
-    #region CreateProjectAsync Tests
 
     [Fact]
     public async Task CreateProjectAsync_WhenProjectIsNull_ThrowsArgumentNullException()
@@ -89,8 +83,8 @@ public class ProjectServiceTests
         // Assert
         capturedProject.Should().NotBeNull();
         capturedProject!.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
-        capturedProject.Status.Should().Be(ProjectStatus.Draft, "new projects should start as drafts");
-        capturedProject.CurrentVolunteers.Should().Be(0, "new projects should have zero volunteers");
+        capturedProject.Status.Should().Be(ProjectStatus.Draft);
+        capturedProject.CurrentVolunteers.Should().Be(0);
     }
 
     [Fact]
@@ -117,10 +111,6 @@ public class ProjectServiceTests
         _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
         result.Should().BeSameAs(project);
     }
-
-    #endregion
-
-    #region UpdateProjectAsync Tests
 
     [Fact]
     public async Task UpdateProjectAsync_WhenProjectNotFound_ReturnsFalse()
@@ -192,18 +182,12 @@ public class ProjectServiceTests
         existingProject.RequiredSkills.Should().BeEquivalentTo(new List<string> { "Skill1", "Skill2" });
         existingProject.Categories.Should().BeEquivalentTo(new List<string> { "Cat1" });
         existingProject.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
-        
-        // Business rule: Status and CurrentVolunteers should NOT be updated via UpdateProjectAsync
         existingProject.Status.Should().Be(ProjectStatus.Draft);
         existingProject.CurrentVolunteers.Should().Be(5);
-        
+
         _projectRepo.Verify(r => r.Update(existingProject), Times.Once);
         _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
     }
-
-    #endregion
-
-    #region DeleteProjectAsync Tests
 
     [Fact]
     public async Task DeleteProjectAsync_WhenProjectHasAcceptedApplications_ThrowsInvalidOperationException()
@@ -242,7 +226,7 @@ public class ProjectServiceTests
         // Arrange
         var sut = CreateSut();
         var project = new Project { Id = 1, Title = "Test Project" };
-        
+
         _appRepo.Setup(r => r.GetAcceptedApplicationsCountAsync(1)).ReturnsAsync(0);
         _projectRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(project);
 
@@ -254,10 +238,6 @@ public class ProjectServiceTests
         _projectRepo.Verify(r => r.Remove(project), Times.Once);
         _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
     }
-
-    #endregion
-
-    #region GetProjectByIdAsync Tests
 
     [Fact]
     public async Task GetProjectByIdAsync_WhenProjectExists_ReturnsProject()
@@ -288,10 +268,6 @@ public class ProjectServiceTests
         // Assert
         result.Should().BeNull();
     }
-
-    #endregion
-
-    #region GetAllProjectsAsync Tests
 
     [Fact]
     public async Task GetAllProjectsAsync_ReturnsAllProjects()
@@ -329,10 +305,6 @@ public class ProjectServiceTests
         result.Should().BeEmpty();
     }
 
-    #endregion
-
-    #region GetProjectsByOrganizationAsync Tests
-
     [Fact]
     public async Task GetProjectsByOrganizationAsync_ReturnsProjectsForOrganization()
     {
@@ -353,10 +325,6 @@ public class ProjectServiceTests
         result.Should().HaveCount(2);
         result.Should().OnlyContain(p => p.OrganizationId == 1);
     }
-
-    #endregion
-
-    #region PublishProjectAsync Tests
 
     [Fact]
     public async Task PublishProjectAsync_WhenProjectNotFound_ReturnsFalse()
@@ -389,7 +357,7 @@ public class ProjectServiceTests
         var result = await sut.PublishProjectAsync(1);
 
         // Assert
-        result.Should().BeFalse("can only publish draft projects");
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -411,7 +379,7 @@ public class ProjectServiceTests
         var result = await sut.PublishProjectAsync(1);
 
         // Assert
-        result.Should().BeFalse("cannot publish project with zero max volunteers");
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -433,7 +401,7 @@ public class ProjectServiceTests
         var result = await sut.PublishProjectAsync(1);
 
         // Assert
-        result.Should().BeFalse("cannot publish project with past deadline");
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -460,10 +428,6 @@ public class ProjectServiceTests
         _projectRepo.Verify(r => r.Update(project), Times.Once);
         _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
     }
-
-    #endregion
-
-    #region CompleteProjectAsync Tests
 
     [Fact]
     public async Task CompleteProjectAsync_WhenProjectNotFound_ReturnsFalse()
@@ -496,7 +460,7 @@ public class ProjectServiceTests
         var result = await sut.CompleteProjectAsync(1);
 
         // Assert
-        result.Should().BeFalse("can only complete published or in-progress projects");
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -542,10 +506,6 @@ public class ProjectServiceTests
         project.Status.Should().Be(ProjectStatus.Completed);
     }
 
-    #endregion
-
-    #region CancelProjectAsync Tests
-
     [Fact]
     public async Task CancelProjectAsync_WhenProjectNotFound_ReturnsFalse()
     {
@@ -583,10 +543,6 @@ public class ProjectServiceTests
         _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
     }
 
-    #endregion
-
-    #region CanAcceptVolunteersAsync Tests
-
     [Fact]
     public async Task CanAcceptVolunteersAsync_WhenProjectNotFound_ReturnsFalse()
     {
@@ -620,7 +576,7 @@ public class ProjectServiceTests
         var result = await sut.CanAcceptVolunteersAsync(1);
 
         // Assert
-        result.Should().BeFalse("project must be published");
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -642,7 +598,7 @@ public class ProjectServiceTests
         var result = await sut.CanAcceptVolunteersAsync(1);
 
         // Assert
-        result.Should().BeFalse("deadline has passed");
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -664,7 +620,7 @@ public class ProjectServiceTests
         var result = await sut.CanAcceptVolunteersAsync(1);
 
         // Assert
-        result.Should().BeFalse("project is at maximum capacity");
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -686,12 +642,8 @@ public class ProjectServiceTests
         var result = await sut.CanAcceptVolunteersAsync(1);
 
         // Assert
-        result.Should().BeTrue("all conditions are met");
+        result.Should().BeTrue();
     }
-
-    #endregion
-
-    #region IncrementVolunteerCountAsync Tests
 
     [Fact]
     public async Task IncrementVolunteerCountAsync_WhenProjectNotFound_ReturnsFalse()
@@ -725,8 +677,8 @@ public class ProjectServiceTests
         var result = await sut.IncrementVolunteerCountAsync(1);
 
         // Assert
-        result.Should().BeFalse("cannot exceed max volunteers");
-        project.CurrentVolunteers.Should().Be(10, "count should not change");
+        result.Should().BeFalse();
+        project.CurrentVolunteers.Should().Be(10);
     }
 
     [Fact]
@@ -752,10 +704,6 @@ public class ProjectServiceTests
         _projectRepo.Verify(r => r.Update(project), Times.Once);
         _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
     }
-
-    #endregion
-
-    #region DecrementVolunteerCountAsync Tests
 
     [Fact]
     public async Task DecrementVolunteerCountAsync_WhenProjectNotFound_ReturnsFalse()
@@ -789,8 +737,8 @@ public class ProjectServiceTests
         var result = await sut.DecrementVolunteerCountAsync(1);
 
         // Assert
-        result.Should().BeFalse("cannot go below zero");
-        project.CurrentVolunteers.Should().Be(0, "count should not change");
+        result.Should().BeFalse();
+        project.CurrentVolunteers.Should().Be(0);
     }
 
     [Fact]
@@ -816,10 +764,6 @@ public class ProjectServiceTests
         _projectRepo.Verify(r => r.Update(project), Times.Once);
         _unitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
     }
-
-    #endregion
-
-    #region ProjectExistsAsync Tests
 
     [Fact]
     public async Task ProjectExistsAsync_WhenProjectExists_ReturnsTrue()
@@ -850,10 +794,6 @@ public class ProjectServiceTests
         // Assert
         result.Should().BeFalse();
     }
-
-    #endregion
-
-    #region CanEditProjectAsync Tests
 
     [Fact]
     public async Task CanEditProjectAsync_WhenProjectNotFound_ReturnsFalse()
@@ -886,7 +826,7 @@ public class ProjectServiceTests
         var result = await sut.CanEditProjectAsync(1, 2);
 
         // Assert
-        result.Should().BeFalse("only owning organization can edit");
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -906,12 +846,8 @@ public class ProjectServiceTests
         var result = await sut.CanEditProjectAsync(1, 1);
 
         // Assert
-        result.Should().BeTrue("owning organization can edit");
+        result.Should().BeTrue();
     }
-
-    #endregion
-
-    #region CanDeleteProjectAsync Tests
 
     [Fact]
     public async Task CanDeleteProjectAsync_WhenHasAcceptedApplications_ReturnsFalse()
@@ -924,7 +860,7 @@ public class ProjectServiceTests
         var result = await sut.CanDeleteProjectAsync(1);
 
         // Assert
-        result.Should().BeFalse("cannot delete projects with accepted applications");
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -938,12 +874,8 @@ public class ProjectServiceTests
         var result = await sut.CanDeleteProjectAsync(1);
 
         // Assert
-        result.Should().BeTrue("can delete projects without accepted applications");
+        result.Should().BeTrue();
     }
-
-    #endregion
-
-    #region IsApplicationDeadlinePassedAsync Tests
 
     [Fact]
     public async Task IsApplicationDeadlinePassedAsync_WhenProjectNotFound_ReturnsTrue()
@@ -956,7 +888,7 @@ public class ProjectServiceTests
         var result = await sut.IsApplicationDeadlinePassedAsync(1);
 
         // Assert
-        result.Should().BeTrue("treat not found as deadline passed");
+        result.Should().BeTrue();
     }
 
     [Fact]
@@ -976,7 +908,7 @@ public class ProjectServiceTests
         var result = await sut.IsApplicationDeadlinePassedAsync(1);
 
         // Assert
-        result.Should().BeFalse("deadline is in the future");
+        result.Should().BeFalse();
     }
 
     [Fact]
@@ -996,8 +928,77 @@ public class ProjectServiceTests
         var result = await sut.IsApplicationDeadlinePassedAsync(1);
 
         // Assert
-        result.Should().BeTrue("deadline has passed");
+        result.Should().BeTrue();
     }
 
-    #endregion
+    [Fact]
+    public async Task CreateProjectAsync_WhenRepositoryThrows_RethrowsException()
+    {
+        // Arrange
+        var sut = CreateSut();
+        var project = new Project { Title = "Test", OrganizationId = 1, MaxVolunteers = 10 };
+
+        _projectRepo.Setup(r => r.AddAsync(It.IsAny<Project>()))
+            .ThrowsAsync(new InvalidOperationException("Database error"));
+
+        // Act
+        Func<Task> act = async () => await sut.CreateProjectAsync(project);
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Database error");
+    }
+
+    [Fact]
+    public async Task UpdateProjectAsync_WhenRepositoryThrows_RethrowsException()
+    {
+        // Arrange
+        var sut = CreateSut();
+        var existing = new Project { Id = 1, Title = "Test", MaxVolunteers = 10 };
+
+        _projectRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(existing);
+        _projectRepo.Setup(r => r.Update(It.IsAny<Project>()))
+            .Throws(new InvalidOperationException("Update failed"));
+
+        // Act
+        Func<Task> act = async () => await sut.UpdateProjectAsync(1, new Project { Title = "Updated" });
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Update failed");
+    }
+
+    [Fact]
+    public async Task GetProjectByIdAsync_WhenRepositoryThrows_RethrowsException()
+    {
+        // Arrange
+        var sut = CreateSut();
+
+        _projectRepo.Setup(r => r.GetByIdAsync(1))
+            .ThrowsAsync(new InvalidOperationException("Get failed"));
+
+        // Act
+        Func<Task> act = async () => await sut.GetProjectByIdAsync(1);
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Get failed");
+    }
+
+    [Fact]
+    public async Task GetAllProjectsAsync_WhenRepositoryThrows_RethrowsException()
+    {
+        // Arrange
+        var sut = CreateSut();
+
+        _projectRepo.Setup(r => r.GetAllAsync())
+            .ThrowsAsync(new InvalidOperationException("GetAll failed"));
+
+        // Act
+        Func<Task> act = async () => await sut.GetAllProjectsAsync();
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("GetAll failed");
+    }
 }

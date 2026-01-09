@@ -35,6 +35,22 @@ public class ApplicationStateTests
     }
 
     [Fact]
+    public async Task PendingState_Reject_TransitionsToRejected_AndSetsReviewFields()
+    {
+        var app = new Application { Id = 1, Status = ApplicationStatus.Pending };
+        var factory = new ApplicationStateFactory(Mock.Of<ILogger<ApplicationStateContext>>());
+        var ctx = new ApplicationStateContext(app, factory, Mock.Of<ILogger<ApplicationStateContext>>());
+
+        var ok = await ctx.RejectAsync("rejection notes");
+
+        ok.Should().BeTrue();
+        ctx.CurrentStatus.Should().Be(ApplicationStatus.Rejected);
+        app.Status.Should().Be(ApplicationStatus.Rejected);
+        app.ReviewNotes.Should().Be("rejection notes");
+        app.ReviewedAt.Should().NotBeNull();
+    }
+
+    [Fact]
     public async Task AcceptedState_Complete_TransitionsToCompleted()
     {
         var app = new Application { Id = 2, Status = ApplicationStatus.Accepted };

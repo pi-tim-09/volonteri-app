@@ -856,4 +856,85 @@ public class ApplicationServiceTests
     }
 
     #endregion
+
+    #region Error Handling Tests
+
+    [Fact]
+    public async Task CreateApplicationAsync_WhenRepositoryThrows_RethrowsException()
+    {
+        // Arrange
+        var sut = CreateSut();
+        _projectService.Setup(s => s.CanAcceptVolunteersAsync(1)).ReturnsAsync(true);
+        
+        var volunteer = new Volunteer { Id = 1, IsActive = true };
+        _volunteerRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(volunteer);
+        _appRepo.Setup(r => r.HasVolunteerAppliedAsync(1, 1)).ReturnsAsync(false);
+        _appRepo.Setup(r => r.AddAsync(It.IsAny<Application>()))
+            .ThrowsAsync(new InvalidOperationException("Database error"));
+
+        // Act
+        Func<Task> act = async () => await sut.CreateApplicationAsync(1, 1);
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Database error");
+    }
+
+    [Fact]
+    public async Task GetApplicationByIdAsync_WhenRepositoryThrows_RethrowsException()
+    {
+        // Arrange
+        var sut = CreateSut();
+        
+        _appRepo.Setup(r => r.GetByIdAsync(1))
+            .ThrowsAsync(new InvalidOperationException("Get failed"));
+
+        // Act
+        Func<Task> act = async () => await sut.GetApplicationByIdAsync(1);
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Get failed");
+    }
+
+    [Fact]
+    public async Task DeleteApplicationAsync_WhenRepositoryThrows_RethrowsException()
+    {
+        // Arrange
+        var sut = CreateSut();
+        var application = new Application { Id = 1, VolunteerId = 1, ProjectId = 1, Status = ApplicationStatus.Pending };
+        
+        _appRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(application);
+        _appRepo.Setup(r => r.Remove(It.IsAny<Application>()))
+            .Throws(new InvalidOperationException("Delete failed"));
+
+        // Act
+        Func<Task> act = async () => await sut.DeleteApplicationAsync(1);
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Delete failed");
+    }
+
+    [Fact]
+    public async Task ApproveApplicationAsync_WhenRepositoryThrows_RethrowsException()
+    {
+        // Arrange
+        var sut = CreateSut();
+        var application = new Application { Id = 1, ProjectId = 1, Status = ApplicationStatus.Pending };
+        
+        _appRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(application);
+        _projectRepo.Setup(r => r.HasAvailableSlotsAsync(1)).ReturnsAsync(true);
+        _appRepo.Setup(r => r.Update(It.IsAny<Application>()))
+            .Throws(new InvalidOperationException("Approve failed"));
+
+        // Act
+        Func<Task> act = async () => await sut.ApproveApplicationAsync(1, "Notes");
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Approve failed");
+    }
+
+    #endregion
 }

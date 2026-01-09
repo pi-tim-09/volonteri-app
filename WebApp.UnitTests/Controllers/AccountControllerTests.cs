@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using WebApp.Controllers;
@@ -24,11 +25,14 @@ public class AccountControllerTests
         var cfg = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>()).Build();
         var controller = new AccountController(_uow.Object, cfg, _hasher.Object)
         {
-            ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() },
+            TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
         };
 
         return controller;
     }
+
+    #region Existing Tests
 
     [Fact]
     public void Register_Get_ReturnsView()
@@ -123,4 +127,101 @@ public class AccountControllerTests
         result.Should().BeOfType<ViewResult>();
         sut.ModelState.ErrorCount.Should().BeGreaterThan(0);
     }
+
+    #endregion
+
+    #region Additional Register Tests
+
+    [Fact]
+    public async Task Register_Post_WhenValid_CreatesVolunteerAndRedirects()
+    {
+        // Arrange
+        var sut = CreateSut();
+        var vm = new RegisterVM
+        {
+            Email = "newuser@test.com",
+            Password = "Password123!",
+            ConfirmPassword = "Password123!",
+            FirstName = "New",
+            LastName = "User",
+            PhoneNumber = "123456789",
+            Role = UserRole.Volunteer
+        };
+
+        _volRepo.Setup(r => r.AnyAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Volunteer, bool>>>()))
+            .ReturnsAsync(false);
+        _hasher.Setup(h => h.HashPassword(vm.Password)).Returns("HASHED_PASSWORD");
+        _volRepo.Setup(r => r.AddAsync(It.IsAny<Volunteer>())).ReturnsAsync((Volunteer v) => v);
+
+        // Act
+        var result = await sut.Register(vm);
+
+        // Assert
+        var redirectResult = result.Should().BeOfType<RedirectToActionResult>().Subject;
+        redirectResult.ActionName.Should().Be("Login");
+        _volRepo.Verify(r => r.AddAsync(It.Is<Volunteer>(v => 
+            v.Email == vm.Email && 
+            v.PasswordHash == "HASHED_PASSWORD")), Times.Once);
+        _uow.Verify(u => u.SaveChangesAsync(), Times.Once);
+    }
+
+    #endregion
+
+    #region Additional Login Tests
+
+    [Fact]
+    public async Task Login_Post_WhenModelInvalid_ReturnsViewWithModel()
+    {
+        // Arrange
+        var sut = CreateSut();
+        sut.ModelState.AddModelError("Email", "Required");
+        var vm = new LoginVM { Email = "test@test.com", Password = "pass" };
+
+        // Act
+        var result = await sut.Login(vm);
+
+        // Assert
+        var view = result.Should().BeOfType<ViewResult>().Subject;
+        view.Model.Should().BeSameAs(vm);
+    }
+
+    [Fact]
+    public async Task Login_Post_WhenUserInactive_ReturnsViewWithModelError()
+    {
+        // Arrange
+        var sut = CreateSut();
+        
+        // The controller checks IsActive in the query: FirstOrDefaultAsync(u => u.Email == model.Email && u.IsActive)
+        // So if user is inactive, it will return null
+        _volRepo.Setup(r => r.FirstOrDefaultAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Volunteer, bool>>>()))
+            .ReturnsAsync((Volunteer?)null);
+
+        var vm = new LoginVM { Email = "inactive@test.com", Password = "password" };
+
+        // Act
+        var result = await sut.Login(vm);
+
+        // Assert
+        result.Should().BeOfType<ViewResult>();
+        sut.ModelState.ErrorCount.Should().BeGreaterThan(0);
+    }
+
+    #endregion
+
+    #region Logout Tests
+
+    [Fact]
+    public void Logout_IsAsyncMethod()
+    {
+        // This test just verifies Logout exists and is async
+        // We can't easily test the actual SignOutAsync without complex auth setup
+        var sut = CreateSut();
+        
+        // Verify the method exists by getting the MethodInfo
+        var logoutMethod = typeof(AccountController).GetMethod("Logout");
+        logoutMethod.Should().NotBeNull();
+        logoutMethod!.ReturnType.Should().Be(typeof(System.Threading.Tasks.Task<IActionResult>));
+    }
+
+    #endregion
 }

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <!-- Exclude test assemblies from coverage -->
+          <Exclude>[WebApp.UnitTests]*,[WebApp.IntegrationTests]*</Exclude>
+          <!-- Exclude auto-generated and presentation files -->
+          <ExcludeByFile>
+            **/Migrations/*.cs,
+            **/Migrations/**/*.cs,
+            **/Program.cs,
+            **/Views/**/*.cshtml.cs,
+            **/*_ViewStart.cshtml.cs,
+            **/*_ViewImports.cshtml.cs,
+            **/AspNetCoreGeneratedDocument.*.cs
+          </ExcludeByFile>
+          <!-- Exclude specific auto-generated types -->
+          <ExcludeByAttribute>
+            Obsolete,
+            GeneratedCodeAttribute,
+            CompilerGeneratedAttribute,
+            ExcludeFromCodeCoverageAttribute
+          </ExcludeByAttribute>
+          <IncludeTestAssembly>false</IncludeTestAssembly>
+          <SingleHit>false</SingleHit>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
