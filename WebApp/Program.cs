@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -86,8 +86,12 @@ builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession();
 
 
-var jwtKey = builder.Configuration["JWT:SecureKey"]
-             ?? "12345678901234567890123456789012";
+var jwtKey = builder.Configuration["JWT:SecureKey"];
+
+if (jwtKey == null)
+{
+    throw new KeyNotFoundException("JWT Secure Key not found in appsettings.json.");
+}
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -133,7 +137,7 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Upi�i: Bearer {JWT token}"
+        Description = "Upiši: Bearer {JWT token}"
     });
 
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
