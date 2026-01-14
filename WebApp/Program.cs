@@ -174,9 +174,11 @@ app.UseSecurityHeaders();
 app.UseCsp(options => options
     .DefaultSources(src => src.Self())
     .ScriptSources(src => src.Self())
-    .StyleSources(src => src.Self().UnsafeInline())
+    .StyleSources(src => src.Self())
     .ImageSources(src => src.Self())
     .FontSources(src => src.Self())
+    .FrameAncestors(src => src.Self())
+    .FormActions(src => src.Self())
     .ObjectSources(src => src.None()));
 
 if (!app.Environment.IsDevelopment())
