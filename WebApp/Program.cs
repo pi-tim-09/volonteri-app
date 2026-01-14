@@ -167,17 +167,19 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
 });
 
 var app = builder.Build();
-
 app.UseGlobalExceptionHandler();
-app.UseSecurityHeaders();
 
 app.UseCsp(options => options
     .DefaultSources(src => src.Self())
     .ScriptSources(src => src.Self())
-    .StyleSources(src => src.Self().UnsafeInline())
+    .StyleSources(src => src.Self())
     .ImageSources(src => src.Self())
     .FontSources(src => src.Self())
+    .FrameAncestors(src => src.Self())
+    .FormActions(src => src.Self())
     .ObjectSources(src => src.None()));
+
+app.UseSecurityHeaders();
 
 if (!app.Environment.IsDevelopment())
 {
@@ -194,13 +196,12 @@ app.UseSwaggerUI(options =>
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
 
 app.UseSession();
+app.UseCookiePolicy();
 
 app.UseAuthentication();
-app.UseCookiePolicy();
 app.UseAuthorization();
 
 app.MapControllerRoute(
