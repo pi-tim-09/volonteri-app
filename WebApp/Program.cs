@@ -160,6 +160,7 @@ var app = builder.Build();
 
 
 app.UseGlobalExceptionHandler();
+app.UseSecurityHeaders();
 
 if (!app.Environment.IsDevelopment())
 {
