@@ -25,25 +25,35 @@ namespace WebApp.Middleware
 
         public async Task InvokeAsync(HttpContext context)
         {
-            // Content Security Policy - prevents XSS and injection attacks
-            var cspPolicy = BuildContentSecurityPolicy();
-            context.Response.Headers.Append("Content-Security-Policy", cspPolicy);
+            // Check if this is an API or Swagger endpoint BEFORE processing
+            var isApiEndpoint = context.Request.Path.StartsWithSegments("/api");
+            var isSwaggerEndpoint = context.Request.Path.StartsWithSegments("/swagger");
 
-            // Anti-clickjacking protection
-            context.Response.Headers.Append("X-Frame-Options", "SAMEORIGIN");
+            // Add security headers BEFORE calling next middleware (before response is sent)
+            // This ensures headers can be modified
+            
+            // Only add CSP to non-API, non-Swagger endpoints
+            // API endpoints return JSON and don't need CSP
+            if (!isApiEndpoint && !isSwaggerEndpoint)
+            {
+                var cspPolicy = BuildContentSecurityPolicy();
+                context.Response.Headers["Content-Security-Policy"] = cspPolicy;
+            }
+
+            // Anti-clickjacking protection - apply to ALL responses
+            context.Response.Headers["X-Frame-Options"] = "SAMEORIGIN";
 
             // Prevent MIME type sniffing
-            context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+            context.Response.Headers["X-Content-Type-Options"] = "nosniff";
 
             // XSS Protection (legacy but still useful for older browsers)
-            context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
+            context.Response.Headers["X-XSS-Protection"] = "1; mode=block";
 
             // Referrer Policy - control referrer information
-            context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
+            context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
 
             // Permissions Policy - control browser features
-            context.Response.Headers.Append("Permissions-Policy",
-                "geolocation=(), microphone=(), camera=()");
+            context.Response.Headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()";
 
             // Remove server header for security through obscurity
             context.Response.Headers.Remove("Server");
@@ -51,33 +61,35 @@ namespace WebApp.Middleware
 
             _logger.LogDebug("Security headers added to response for {Path}", context.Request.Path);
 
+            // Call next middleware
             await _next(context);
         }
 
         private string BuildContentSecurityPolicy()
         {
-            // Base policy that works with your current setup
+            // Strict CSP policy without wildcards or unsafe-inline
             var policy = new List<string>
             {
                 "default-src 'self'",
-                "script-src 'self' 'unsafe-inline'", // Allow inline scripts (for now)
-                "style-src 'self' 'unsafe-inline'", // Bootstrap Icons CDN
-                "img-src 'self' data: https:",
-                "font-src 'self'", // Bootstrap Icons fonts
-                "connect-src 'self'",
+                "script-src 'self'", // Removed 'unsafe-inline' - all scripts must be in external files
+                "style-src 'self'", // Removed 'unsafe-inline' - all styles must be in external CSS files or classes
+                "img-src 'self' data:", // Only allow self-hosted images and data URIs (for inline SVG in CSS)
+                "font-src 'self'", // Only self-hosted fonts
+                "connect-src 'self'", // AJAX/fetch requests only to same origin
                 "frame-ancestors 'self'", // Additional clickjacking protection
-                "base-uri 'self'",
-                "form-action 'self'"
+                "base-uri 'self'", // Prevent base tag injection
+                "form-action 'self'", // Forms can only submit to same origin
+                "object-src 'none'", // Disallow plugins (Flash, Java, etc.)
+                "media-src 'self'", // Audio/video only from same origin
+                "worker-src 'self'", // Web workers only from same origin
+                "manifest-src 'self'" // PWA manifest only from same origin
             };
 
-            // In development, add more permissive rules for debugging
-            if (_environment.IsDevelopment())
+            // Only add upgrade-insecure-requests in production (HTTPS)
+            // Don't add it locally as it breaks HTTP testing
+            if (!_environment.IsDevelopment())
             {
-                policy.Add("upgrade-insecure-requests"); // Comment out if testing HTTP
-            }
-            else
-            {
-                policy.Add("upgrade-insecure-requests"); // Force HTTPS in production
+                policy.Add("upgrade-insecure-requests");
             }
 
             return string.Join("; ", policy);
