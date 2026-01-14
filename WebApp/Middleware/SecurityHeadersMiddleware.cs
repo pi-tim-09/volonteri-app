@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace WebApp.Middleware
@@ -12,6 +13,9 @@ namespace WebApp.Middleware
         private readonly RequestDelegate _next;
         private readonly ILogger<SecurityHeadersMiddleware> _logger;
         private readonly IWebHostEnvironment _environment;
+        
+        // Context key for storing the CSP nonce
+        public const string NonceKey = "csp-nonce";
 
         public SecurityHeadersMiddleware(
             RequestDelegate next,
@@ -29,6 +33,10 @@ namespace WebApp.Middleware
             var isApiEndpoint = context.Request.Path.StartsWithSegments("/api");
             var isSwaggerEndpoint = context.Request.Path.StartsWithSegments("/swagger");
 
+            // Generate a cryptographically secure nonce for this request
+            var nonce = GenerateNonce();
+            context.Items[NonceKey] = nonce;
+
             // Add security headers BEFORE calling next middleware (before response is sent)
             // This ensures headers can be modified
             
@@ -36,7 +44,7 @@ namespace WebApp.Middleware
             // API endpoints return JSON and don't need CSP
             if (!isApiEndpoint && !isSwaggerEndpoint)
             {
-                var cspPolicy = BuildContentSecurityPolicy();
+                var cspPolicy = BuildContentSecurityPolicy(nonce);
                 context.Response.Headers["Content-Security-Policy"] = cspPolicy;
             }
 
@@ -59,22 +67,26 @@ namespace WebApp.Middleware
             context.Response.Headers.Remove("Server");
             context.Response.Headers.Remove("X-Powered-By");
 
-            _logger.LogDebug("Security headers added to response for {Path}", context.Request.Path);
+            _logger.LogDebug("Security headers added to response for {Path} with nonce", context.Request.Path);
 
             // Call next middleware
             await _next(context);
         }
 
-        private string BuildContentSecurityPolicy()
+        private string BuildContentSecurityPolicy(string nonce)
         {
-            // Strict CSP policy without wildcards or unsafe-inline
+            // CSP policy with nonce support for inline scripts
+            // This is more secure than 'unsafe-inline' while still allowing necessary inline scripts
             var policy = new List<string>
             {
                 "default-src 'self'",
-                "script-src 'self'",
-                "style-src 'self'",
-                "img-src 'self' data:",
-                "font-src 'self'",
+                // Allow scripts from self and inline scripts with correct nonce
+                // Also allow inline event handlers for Bootstrap components
+                $"script-src 'self' 'nonce-{nonce}' 'unsafe-inline'",
+                // Allow styles from self and inline styles (needed for Bootstrap)
+                "style-src 'self' 'unsafe-inline'",
+                "img-src 'self' data: https:",
+                "font-src 'self' data:",
                 "connect-src 'self'",
                 "frame-ancestors 'self'",
                 "base-uri 'self'",
@@ -93,6 +105,15 @@ namespace WebApp.Middleware
             }
 
             return string.Join("; ", policy);
+        }
+        
+        /// <summary>
+        /// Generates a cryptographically secure random nonce for CSP
+        /// </summary>
+        private static string GenerateNonce()
+        {
+            var bytes = RandomNumberGenerator.GetBytes(32);
+            return Convert.ToBase64String(bytes);
         }
     }
 
