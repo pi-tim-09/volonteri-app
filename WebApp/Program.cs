@@ -156,8 +156,17 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-var app = builder.Build();
+builder.Services.AddAntiforgery(options =>
+{
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
 
+builder.Services.Configure<CookiePolicyOptions>(options =>
+{
+    options.Secure = CookieSecurePolicy.Always;
+});
+
+var app = builder.Build();
 
 app.UseGlobalExceptionHandler();
 app.UseSecurityHeaders();
@@ -182,10 +191,9 @@ app.UseRouting();
 
 app.UseSession();
 
-
 app.UseAuthentication();
+app.UseCookiePolicy();
 app.UseAuthorization();
-
 
 app.MapControllerRoute(
     name: "default",
