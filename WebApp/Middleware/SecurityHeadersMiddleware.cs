@@ -71,18 +71,18 @@ namespace WebApp.Middleware
             var policy = new List<string>
             {
                 "default-src 'self'",
-                "script-src 'self'", // Removed 'unsafe-inline' - all scripts must be in external files
-                "style-src 'self'", // Removed 'unsafe-inline' - all styles must be in external CSS files or classes
-                "img-src 'self' data:", // Only allow self-hosted images and data URIs (for inline SVG in CSS)
-                "font-src 'self'", // Only self-hosted fonts
-                "connect-src 'self'", // AJAX/fetch requests only to same origin
-                "frame-ancestors 'self'", // Additional clickjacking protection
-                "base-uri 'self'", // Prevent base tag injection
-                "form-action 'self'", // Forms can only submit to same origin
-                "object-src 'none'", // Disallow plugins (Flash, Java, etc.)
-                "media-src 'self'", // Audio/video only from same origin
-                "worker-src 'self'", // Web workers only from same origin
-                "manifest-src 'self'" // PWA manifest only from same origin
+                "script-src 'self'",
+                "style-src 'self'",
+                "img-src 'self' data:",
+                "font-src 'self'",
+                "connect-src 'self'",
+                "frame-ancestors 'self'",
+                "base-uri 'self'",
+                "form-action 'self'",
+                "object-src 'none'",
+                "media-src 'self'",
+                "worker-src 'self'",
+                "manifest-src 'self'"
             };
 
             // Only add upgrade-insecure-requests in production (HTTPS)
