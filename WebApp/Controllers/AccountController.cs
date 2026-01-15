@@ -59,7 +59,7 @@ namespace WebApp.Controllers
                 };
                 await _unitOfWork.Volunteers.AddAsync(user);
                 await _unitOfWork.SaveChangesAsync();
-                // Možeš preusmjeriti na login ili prikazati poruku
+                
                 return RedirectToAction("Login");
             }
             catch 
@@ -96,7 +96,7 @@ namespace WebApp.Controllers
                     return View(model);
                 }
 
-                // Kreiraj claimove
+                
                 var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.Email),
