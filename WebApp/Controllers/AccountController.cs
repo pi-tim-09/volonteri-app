@@ -8,6 +8,7 @@ using WebApp.Models;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.Extensions.Logging;
 
 namespace WebApp.Controllers
 {
@@ -16,12 +17,18 @@ namespace WebApp.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private readonly IConfiguration _configuration;
         private readonly IPasswordHasher _passwordHasher;
+        private readonly ILogger<AccountController> _logger;
 
-        public AccountController(IUnitOfWork unitOfWork, IConfiguration configuration, IPasswordHasher passwordHasher)
+        public AccountController(
+            IUnitOfWork unitOfWork, 
+            IConfiguration configuration, 
+            IPasswordHasher passwordHasher,
+            ILogger<AccountController> logger)
         {
             _unitOfWork = unitOfWork;
             _configuration = configuration;
             _passwordHasher = passwordHasher;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -62,9 +69,9 @@ namespace WebApp.Controllers
                 
                 return RedirectToAction("Login");
             }
-            catch 
+            catch (Exception ex)
             {
-
+                _logger.LogError(ex, "Error during user registration for email: {Email}", model.Email);
                 ModelState.AddModelError(
                     string.Empty,
                     "Registration is currently unavailable. Please try again later."
@@ -113,9 +120,9 @@ namespace WebApp.Controllers
 
                 return RedirectToAction("Index", "Home");
             }
-            catch 
+            catch (Exception ex)
             {
-
+                _logger.LogError(ex, "Error during user login for email: {Email}", model.Email);
                 ModelState.AddModelError(
                     string.Empty,
                     "Login is currently unavailable. Please try again later."
