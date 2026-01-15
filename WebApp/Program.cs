@@ -200,7 +200,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 
-var secureCookiePolicy = builder.Environment.IsDevelopment() ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
+var secureCookiePolicy = builder.Environment.IsDevelopment() ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.None;
 
 builder.Services.AddAntiforgery(options =>
 {
