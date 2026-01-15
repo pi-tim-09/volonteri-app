@@ -29,37 +29,45 @@ namespace WebApp.Middleware
             var isApiEndpoint = context.Request.Path.StartsWithSegments("/api");
             var isSwaggerEndpoint = context.Request.Path.StartsWithSegments("/swagger");
 
-            // Add security headers BEFORE calling next middleware (before response is sent)
-            // This ensures headers can be modified
-            
-            // Only add CSP to non-API, non-Swagger endpoints
-            // API endpoints return JSON and don't need CSP
-            if (!isApiEndpoint && !isSwaggerEndpoint)
+            // Add security headers using OnStarting callback
+            // This ensures headers are set just before the response is sent
+            // and won't be lost during redirects or other response modifications
+            context.Response.OnStarting(() =>
             {
-                var cspPolicy = BuildContentSecurityPolicy();
-                context.Response.Headers["Content-Security-Policy"] = cspPolicy;
-            }
+                // Only add CSP to non-API, non-Swagger endpoints
+                // API endpoints return JSON and don't need CSP
+                if (!isApiEndpoint && !isSwaggerEndpoint)
+                {
+                    var cspPolicy = BuildContentSecurityPolicy();
+                    if (!context.Response.Headers.ContainsKey("Content-Security-Policy"))
+                    {
+                        context.Response.Headers["Content-Security-Policy"] = cspPolicy;
+                    }
+                }
 
-            // Anti-clickjacking protection - apply to ALL responses
-            context.Response.Headers["X-Frame-Options"] = "SAMEORIGIN";
+                // Anti-clickjacking protection - apply to ALL responses
+                context.Response.Headers["X-Frame-Options"] = "SAMEORIGIN";
 
-            // Prevent MIME type sniffing
-            context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+                // Prevent MIME type sniffing
+                context.Response.Headers["X-Content-Type-Options"] = "nosniff";
 
-            // XSS Protection (legacy but still useful for older browsers)
-            context.Response.Headers["X-XSS-Protection"] = "1; mode=block";
+                // XSS Protection (legacy but still useful for older browsers)
+                context.Response.Headers["X-XSS-Protection"] = "1; mode=block";
 
-            // Referrer Policy - control referrer information
-            context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+                // Referrer Policy - control referrer information
+                context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
 
-            // Permissions Policy - control browser features
-            context.Response.Headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()";
+                // Permissions Policy - control browser features
+                context.Response.Headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()";
 
-            // Remove server header for security through obscurity
-            context.Response.Headers.Remove("Server");
-            context.Response.Headers.Remove("X-Powered-By");
+                // Remove server header for security through obscurity
+                context.Response.Headers.Remove("Server");
+                context.Response.Headers.Remove("X-Powered-By");
 
-            _logger.LogDebug("Security headers added to response for {Path}", context.Request.Path);
+                _logger.LogDebug("Security headers added to response for {Path}", context.Request.Path);
+
+                return Task.CompletedTask;
+            });
 
             // Call next middleware
             await _next(context);
