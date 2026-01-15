@@ -17,9 +17,22 @@ using WebApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// DB configuration
+// Prefer SQL Server when configured; fall back to an in-memory DB when DefaultConnection is missing.
+// This avoids runtime 500s in environments where the connection string isn't present (e.g., some demo deploys).
+var defaultConnection = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    if (!string.IsNullOrWhiteSpace(defaultConnection))
+    {
+        options.UseSqlServer(defaultConnection);
+    }
+    else
+    {
+        options.UseInMemoryDatabase("FallbackDb");
+    }
+});
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
