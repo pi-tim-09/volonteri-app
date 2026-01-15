@@ -27,11 +27,25 @@ if (builder.Environment.IsProduction())
     
     if (!string.IsNullOrEmpty(databaseUrl))
     {
-        // Parse Render's DATABASE_URL format: postgresql://user:password@host:port/database
-        var databaseUri = new Uri(databaseUrl);
-        var userInfo = databaseUri.UserInfo.Split(':');
-        
-        connectionString = $"Host={databaseUri.Host};Port={databaseUri.Port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+        try
+        {
+            // Parse Render's DATABASE_URL format: postgresql://user:password@host:port/database
+            var databaseUri = new Uri(databaseUrl);
+            var userInfo = databaseUri.UserInfo.Split(':');
+            
+            // Use default PostgreSQL port (5432) if not specified
+            var port = databaseUri.Port > 0 ? databaseUri.Port : 5432;
+            
+            connectionString = $"Host={databaseUri.Host};Port={port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Failed to parse DATABASE_URL environment variable. Value: '{databaseUrl}'. Error: {ex.Message}", ex);
+        }
+    }
+    else
+    {
+        throw new InvalidOperationException("DATABASE_URL environment variable is not set. Please configure it in Render dashboard.");
     }
     
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -106,8 +120,7 @@ builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasherService>();
 
 builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession
-    ();
+builder.Services.AddSession();
 
 // Configure JWT Key - use environment variable in production
 var jwtKey = builder.Configuration["JWT:SecureKey"];
