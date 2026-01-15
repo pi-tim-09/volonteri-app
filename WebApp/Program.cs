@@ -17,9 +17,32 @@ using WebApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure Database based on environment
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+if (builder.Environment.IsProduction())
+{
+    // Production: Use PostgreSQL from environment variable (Render)
+    var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+    
+    if (!string.IsNullOrEmpty(databaseUrl))
+    {
+        // Parse Render's DATABASE_URL format: postgresql://user:password@host:port/database
+        var databaseUri = new Uri(databaseUrl);
+        var userInfo = databaseUri.UserInfo.Split(':');
+        
+        connectionString = $"Host={databaseUri.Host};Port={databaseUri.Port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+    }
+    
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseNpgsql(connectionString));
+}
+else
+{
+    // Development: Use SQL Server locally
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseSqlServer(connectionString));
+}
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -83,14 +106,21 @@ builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasherService>();
 
 builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession();
+builder.Services.AddSession
+    ();
 
-
+// Configure JWT Key - use environment variable in production
 var jwtKey = builder.Configuration["JWT:SecureKey"];
 
-if (jwtKey == null)
+if (builder.Environment.IsProduction())
 {
-    throw new KeyNotFoundException("JWT Secure Key not found in appsettings.json.");
+    // In production, use environment variable
+    jwtKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? jwtKey;
+}
+
+if (string.IsNullOrEmpty(jwtKey))
+{
+    throw new KeyNotFoundException("JWT Secure Key not found in configuration or environment variables.");
 }
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
