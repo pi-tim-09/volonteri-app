@@ -156,14 +156,17 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+
+var secureCookiePolicy = builder.Environment.IsDevelopment() ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
+
 builder.Services.AddAntiforgery(options =>
 {
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SecurePolicy = secureCookiePolicy;
 });
 
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
-    options.Secure = CookieSecurePolicy.Always;
+    options.Secure = secureCookiePolicy;
 });
 
 var app = builder.Build();
