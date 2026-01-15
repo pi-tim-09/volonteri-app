@@ -1,5 +1,4 @@
 using FluentAssertions;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -33,27 +32,19 @@ public class GlobalExceptionHandlerMiddlewareTests
     }
 
     [Fact]
-    public async Task InvokeAsync_WhenExceptionOccurs_Returns500InternalServerError()
+    public async Task InvokeAsync_WhenExceptionOccurs_ForApiRequest_Returns500Json()
     {
         // Arrange
         var logger = new Mock<ILogger<GlobalExceptionHandlerMiddleware>>();
         RequestDelegate next = (ctx) => throw new InvalidOperationException("Test exception");
 
-        var hostEnv = new Mock<IWebHostEnvironment>();
-        hostEnv.Setup(e => e.EnvironmentName).Returns(Environments.Production);
-
-        var serviceProvider = new Mock<IServiceProvider>();
-        serviceProvider.Setup(s => s.GetService(typeof(IWebHostEnvironment))).Returns(hostEnv.Object);
-
         var middleware = new GlobalExceptionHandlerMiddleware(next, logger.Object);
         var context = new DefaultHttpContext
         {
-            RequestServices = serviceProvider.Object,
-            Response =
-            {
-                Body = new MemoryStream()
-            }
+            Response = { Body = new MemoryStream() }
         };
+        context.Request.Path = "/api/test";
+        context.Request.Headers.Accept = "application/json";
 
         // Act
         await middleware.InvokeAsync(context);
@@ -61,39 +52,33 @@ public class GlobalExceptionHandlerMiddlewareTests
         // Assert
         context.Response.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
         context.Response.ContentType.Should().Be("application/json");
+
+        context.Response.Body.Seek(0, SeekOrigin.Begin);
+        var body = await new StreamReader(context.Response.Body).ReadToEndAsync();
+        body.Should().NotContain("Test exception");
+        body.Should().NotContain("StackTrace");
     }
 
     [Fact]
-    public async Task InvokeAsync_WhenExceptionOccursInDevelopment_IncludesStackTrace()
+    public async Task InvokeAsync_WhenExceptionOccurs_ForBrowserRequest_RedirectsToErrorPage()
     {
         // Arrange
         var logger = new Mock<ILogger<GlobalExceptionHandlerMiddleware>>();
         RequestDelegate next = (ctx) => throw new InvalidOperationException("Test exception");
 
-        var hostEnv = new Mock<IWebHostEnvironment>();
-        hostEnv.Setup(e => e.EnvironmentName).Returns(Environments.Development);
-
-        var serviceProvider = new Mock<IServiceProvider>();
-        serviceProvider.Setup(s => s.GetService(typeof(IWebHostEnvironment))).Returns(hostEnv.Object);
-
         var middleware = new GlobalExceptionHandlerMiddleware(next, logger.Object);
         var context = new DefaultHttpContext
         {
-            RequestServices = serviceProvider.Object,
-            Response =
-            {
-                Body = new MemoryStream()
-            }
+            Response = { Body = new MemoryStream() }
         };
+        context.Request.Path = "/Account/Login";
+        context.Request.Headers.Accept = "text/html";
 
         // Act
         await middleware.InvokeAsync(context);
 
         // Assert
-        context.Response.Body.Seek(0, SeekOrigin.Begin);
-        var reader = new StreamReader(context.Response.Body);
-        var body = await reader.ReadToEndAsync();
-
-        body.Should().Contain("StackTrace");
+        context.Response.StatusCode.Should().Be(StatusCodes.Status302Found);
+        context.Response.Headers.Location.ToString().Should().Be("/Home/Error");
     }
 }
