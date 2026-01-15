@@ -60,6 +60,16 @@ namespace WebApp.Middleware
                 // Permissions Policy - control browser features
                 context.Response.Headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()";
 
+                // Strict-Transport-Security (HSTS) - enforce HTTPS
+                // Only add in production to avoid issues with local HTTP development
+                if (!_environment.IsDevelopment())
+                {
+                    // max-age=31536000 = 1 year
+                    // includeSubDomains = apply to all subdomains
+                    // preload = allow inclusion in browser HSTS preload lists
+                    context.Response.Headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload";
+                }
+
                 // Remove server header for security through obscurity
                 context.Response.Headers.Remove("Server");
                 context.Response.Headers.Remove("X-Powered-By");

@@ -169,16 +169,6 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
 var app = builder.Build();
 app.UseGlobalExceptionHandler();
 
-//app.UseCsp(options => options
-//    .DefaultSources(src => src.Self())
-//    .ScriptSources(src => src.Self())
-//    .StyleSources(src => src.Self())
-//    .ImageSources(src => src.Self())
-//    .FontSources(src => src.Self())
-//    .FrameAncestors(src => src.Self())
-//    .FormActions(src => src.Self())
-//    .ObjectSources(src => src.None()));
-
 app.UseSecurityHeaders();
 
 if (!app.Environment.IsDevelopment())
