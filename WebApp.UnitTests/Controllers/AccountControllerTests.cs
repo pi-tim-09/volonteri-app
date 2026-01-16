@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Moq;
 using WebApp.Controllers;
 using WebApp.Interfaces;
@@ -17,13 +18,14 @@ public class AccountControllerTests
     private readonly Mock<IUnitOfWork> _uow = new();
     private readonly Mock<IVolunteerRepository> _volRepo = new();
     private readonly Mock<IPasswordHasher> _hasher = new();
+    private readonly Mock<ILogger<AccountController>> _logger = new();
 
     private AccountController CreateSut()
     {
         _uow.SetupGet(x => x.Volunteers).Returns(_volRepo.Object);
 
         var cfg = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>()).Build();
-        var controller = new AccountController(_uow.Object, cfg, _hasher.Object)
+        var controller = new AccountController(_uow.Object, cfg, _hasher.Object, _logger.Object)
         {
             ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() },
             TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())

@@ -8,6 +8,7 @@ using WebApp.Models;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.Extensions.Logging;
 
 namespace WebApp.Controllers
 {
@@ -16,12 +17,18 @@ namespace WebApp.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private readonly IConfiguration _configuration;
         private readonly IPasswordHasher _passwordHasher;
+        private readonly ILogger<AccountController> _logger;
 
-        public AccountController(IUnitOfWork unitOfWork, IConfiguration configuration, IPasswordHasher passwordHasher)
+        public AccountController(
+            IUnitOfWork unitOfWork, 
+            IConfiguration configuration, 
+            IPasswordHasher passwordHasher,
+            ILogger<AccountController> logger)
         {
             _unitOfWork = unitOfWork;
             _configuration = configuration;
             _passwordHasher = passwordHasher;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -37,28 +44,40 @@ namespace WebApp.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            if (await _unitOfWork.Volunteers.AnyAsync(u => u.Email == model.Email))
+            try
             {
-                ModelState.AddModelError("Email", "Email je već registrovan.");
+                if (await _unitOfWork.Volunteers.AnyAsync(u => u.Email == model.Email))
+                {
+                    ModelState.AddModelError("Email", "Email is already registered.");
+                    return View(model);
+                }
+
+                var passwordHash = _passwordHasher.HashPassword(model.Password);
+                var user = new Volunteer
+                {
+                    Email = model.Email,
+                    PasswordHash = passwordHash,
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    PhoneNumber = model.PhoneNumber,
+                    Role = model.Role,
+                    CreatedAt = DateTime.UtcNow,
+                    IsActive = true
+                };
+                await _unitOfWork.Volunteers.AddAsync(user);
+                await _unitOfWork.SaveChangesAsync();
+                
+                return RedirectToAction("Login");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during user registration for email: {Email}", model.Email);
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Registration is currently unavailable. Please try again later."
+                );
                 return View(model);
             }
-
-            var passwordHash = _passwordHasher.HashPassword(model.Password);
-            var user = new Volunteer
-            {
-                Email = model.Email,
-                PasswordHash = passwordHash,
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                PhoneNumber = model.PhoneNumber,
-                Role = model.Role,
-                CreatedAt = DateTime.UtcNow,
-                IsActive = true
-            };
-            await _unitOfWork.Volunteers.AddAsync(user);
-            await _unitOfWork.SaveChangesAsync();
-            // Možeš preusmjeriti na login ili prikazati poruku
-            return RedirectToAction("Login");
         }
 
         [HttpGet]
@@ -74,29 +93,42 @@ namespace WebApp.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            var user = await _unitOfWork.Volunteers.FirstOrDefaultAsync(u => u.Email == model.Email && u.IsActive);
-            if (user == null || !_passwordHasher.VerifyPassword(user.PasswordHash, model.Password))
+            try
             {
-                ModelState.AddModelError(string.Empty, "Pogrešan email ili lozinka.");
-                return View(model);
-            }
+                var user = await _unitOfWork.Volunteers.FirstOrDefaultAsync(u => u.Email == model.Email && u.IsActive);
+                if (user == null || !_passwordHasher.VerifyPassword(user.PasswordHash, model.Password))
+                {
+                    ModelState.AddModelError(string.Empty, "Invalid email or password.");
 
-            // Kreiraj claimove
-            var claims = new List<Claim>
+                    return View(model);
+                }
+
+                
+                var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.Email),
                 new Claim(ClaimTypes.Role, user.Role.ToString())
             };
 
-            var claimsIdentity = new ClaimsIdentity(claims, "MyCookieAuth");
-            var authProperties = new AuthenticationProperties
+                var claimsIdentity = new ClaimsIdentity(claims, "MyCookieAuth");
+                var authProperties = new AuthenticationProperties
+                {
+                    IsPersistent = true
+                };
+
+                await HttpContext.SignInAsync("MyCookieAuth", new ClaimsPrincipal(claimsIdentity), authProperties);
+
+                return RedirectToAction("Index", "Home");
+            }
+            catch (Exception ex)
             {
-                IsPersistent = true
-            };
-
-            await HttpContext.SignInAsync("MyCookieAuth", new ClaimsPrincipal(claimsIdentity), authProperties);
-
-            return RedirectToAction("Index", "Home");
+                _logger.LogError(ex, "Error during user login for email: {Email}", model.Email);
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Login is currently unavailable. Please try again later."
+                );
+                return View(model);
+            }
         }
 
         [HttpPost]

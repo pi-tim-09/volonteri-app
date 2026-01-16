@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -17,9 +18,53 @@ using WebApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Configure Database based on environment
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+if (builder.Environment.IsProduction())
+{
+    // Production: Use PostgreSQL from environment variable (Render)
+    var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+    
+    if (!string.IsNullOrEmpty(databaseUrl))
+    {
+        try
+        {
+            // Parse Render's DATABASE_URL format: postgresql://user:password@host:port/database
+            var databaseUri = new Uri(databaseUrl);
+            var userInfo = databaseUri.UserInfo.Split(':');
+            
+            // Use default PostgreSQL port (5432) if not specified
+            var port = databaseUri.Port > 0 ? databaseUri.Port : 5432;
+            
+            connectionString = $"Host={databaseUri.Host};Port={port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Failed to parse DATABASE_URL environment variable. Value: '{databaseUrl}'. Error: {ex.Message}", ex);
+        }
+    }
+    else
+    {
+        throw new InvalidOperationException("DATABASE_URL environment variable is not set. Please configure it in Render dashboard.");
+    }
+    
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseNpgsql(connectionString));
+}
+else
+{
+    // Development: Use SQL Server locally
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseSqlServer(connectionString));
+}
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -85,12 +130,18 @@ builder.Services.AddScoped<IPasswordHasher, PasswordHasherService>();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession();
 
-
+// Configure JWT Key - use environment variable in production
 var jwtKey = builder.Configuration["JWT:SecureKey"];
 
-if (jwtKey == null)
+if (builder.Environment.IsProduction())
 {
-    throw new KeyNotFoundException("JWT Secure Key not found in appsettings.json.");
+    // In production, use environment variable
+    jwtKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? jwtKey;
+}
+
+if (string.IsNullOrEmpty(jwtKey))
+{
+    throw new KeyNotFoundException("JWT Secure Key not found in configuration or environment variables.");
 }
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -156,17 +207,21 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+
+var secureCookiePolicy = builder.Environment.IsDevelopment() ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
+
 builder.Services.AddAntiforgery(options =>
 {
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SecurePolicy = secureCookiePolicy;
 });
 
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
-    options.Secure = CookieSecurePolicy.Always;
+    options.Secure = secureCookiePolicy;
 });
 
 var app = builder.Build();
+app.UseForwardedHeaders();
 app.UseGlobalExceptionHandler();
 
 app.UseSecurityHeaders();
