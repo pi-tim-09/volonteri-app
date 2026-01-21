@@ -10,6 +10,7 @@ public class AdminRepositoryTests : IDisposable
 {
     private readonly ApplicationDbContext _context;
     private readonly AdminRepository _repository;
+    private bool _disposed = false;
 
     public AdminRepositoryTests()
     {
@@ -21,10 +22,24 @@ public class AdminRepositoryTests : IDisposable
         _repository = new AdminRepository(_context);
     }
 
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing)
+            {
+                _context.Database.EnsureDeleted();
+                _context.Dispose();
+            }
+
+            _disposed = true;
+        }
+    }
+
     public void Dispose()
     {
-        _context.Database.EnsureDeleted();
-        _context.Dispose();
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 
     [Fact]

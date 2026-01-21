@@ -24,7 +24,7 @@ public class ApiResponseTests
         resp.Success.Should().BeFalse();
         resp.Data.Should().Be(default(int)); 
         resp.Message.Should().Be("bad");
-        resp.Errors.Should().BeEquivalentTo(new[] { "e1" });
+        resp.Errors.Should().BeEquivalentTo("e1");
     }
 
     [Fact]
@@ -44,6 +44,6 @@ public class ApiResponseTests
 
         resp.Success.Should().BeFalse();
         resp.Message.Should().Be("oops");
-        resp.Errors.Should().BeEquivalentTo(new[] { "a", "b" });
+        resp.Errors.Should().BeEquivalentTo("a", "b");
     }
 }

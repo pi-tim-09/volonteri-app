@@ -130,7 +130,7 @@ public class ApplicationsApiIntegrationTests : IClassFixture<CustomWebApplicatio
         // Arrange
         var volunteer = await CreateTestVolunteerInDb("filtertest@example.com");
         var project1 = await CreateTestProjectInDb();
-        var project2 = await CreateTestProjectInDb();
+         await CreateTestProjectInDb();
         await CreateTestApplicationInDb(volunteer.Id, project1.Id);
 
         // Act

@@ -249,7 +249,7 @@ public class AdminsApiIntegrationTests : IClassFixture<CustomWebApplicationFacto
     {
         // Arrange 
         var admin1 = await CreateTestAdminInDb("admin1@example.com");
-        var admin2 = await CreateTestAdminInDb("admin2@example.com");
+        await CreateTestAdminInDb("admin2@example.com");
 
         // Act
         var response = await _client.DeleteAsync($"/api/admins/{admin1.Id}");
@@ -512,7 +512,7 @@ public class AdminsApiIntegrationTests : IClassFixture<CustomWebApplicationFacto
         }
 
         
-        var admin2 = await CreateTestAdminInDb("admin2@example.com");
+        await CreateTestAdminInDb("admin2@example.com");
 
         
         var deleteResponse = await _client.DeleteAsync($"/api/admins/{adminId}");

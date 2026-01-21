@@ -42,9 +42,9 @@ namespace WebApp.Patterns.Structural
     {
         protected readonly INotificationService _wrappedService;
 
-        protected NotificationDecorator(INotificationService wrappedService)
+        protected NotificationDecorator(INotificationService notificationService)
         {
-            _wrappedService = wrappedService ?? throw new ArgumentNullException(nameof(wrappedService));
+            _wrappedService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
         }
 
         public virtual async Task NotifyApplicationApprovedAsync(Application application)
@@ -75,10 +75,10 @@ namespace WebApp.Patterns.Structural
 
         public LoggingNotificationDecorator(
             INotificationService wrappedService,
-            ILogger<LoggingNotificationDecorator> logger)
+            ILogger<LoggingNotificationDecorator> notificationLogger)
             : base(wrappedService)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _logger = notificationLogger ?? throw new ArgumentNullException(nameof(notificationLogger));
         }
 
         public override async Task NotifyApplicationApprovedAsync(Application application)

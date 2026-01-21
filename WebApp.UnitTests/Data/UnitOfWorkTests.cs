@@ -9,6 +9,7 @@ public class UnitOfWorkTests : IDisposable
 {
     private readonly ApplicationDbContext _context;
     private readonly UnitOfWork _unitOfWork;
+    private bool _disposed = false;
 
     public UnitOfWorkTests()
     {
@@ -21,10 +22,23 @@ public class UnitOfWorkTests : IDisposable
         _unitOfWork = new UnitOfWork(_context);
     }
 
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing)
+            {
+                _unitOfWork.Dispose();
+            }
+
+            _disposed = true;
+        }
+    }
+
     public void Dispose()
     {
-       
-        _unitOfWork.Dispose();
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 
     [Fact]

@@ -129,7 +129,7 @@ public class ApplicationsControllerTests
         var result = await sut.Manage(null, ApplicationStatus.Pending);
 
         // Assert
-        var viewResult = result.Should().BeOfType<ViewResult>().Subject;
+        _ = result.Should().BeOfType<ViewResult>().Subject;
         sut.ViewData.ContainsKey("FilterStatus").Should().BeTrue();
         sut.ViewData["FilterStatus"].Should().Be(ApplicationStatus.Pending);
     }
@@ -146,7 +146,7 @@ public class ApplicationsControllerTests
             .ReturnsAsync(new Project { Id = 5, Title = "Project 5" });
 
         // Act
-        var result = await sut.Manage(5, ApplicationStatus.Accepted);
+        await sut.Manage(5, ApplicationStatus.Accepted);
 
         // Assert
         sut.ViewData.ContainsKey("ProjectId").Should().BeTrue();
@@ -167,7 +167,7 @@ public class ApplicationsControllerTests
         var result = await sut.Manage(999, null);
 
         // Assert
-        var viewResult = result.Should().BeOfType<ViewResult>().Subject;
+        _ = result.Should().BeOfType<ViewResult>().Subject;
         sut.ViewData["ProjectTitle"].Should().BeNull();
         sut.ViewData["ProjectId"].Should().Be(999);
     }
@@ -201,7 +201,7 @@ public class ApplicationsControllerTests
         var result = await sut.Approve(1, null);
 
         // Assert
-        var redirect = result.Should().BeOfType<RedirectToActionResult>().Subject;
+        _ = result.Should().BeOfType<RedirectToActionResult>().Subject;
         sut.TempData["SuccessMessage"].Should().NotBeNull();
     }
 
@@ -233,7 +233,7 @@ public class ApplicationsControllerTests
         var result = await sut.Reject(1, null);
 
         // Assert
-        var redirect = result.Should().BeOfType<RedirectToActionResult>().Subject;
+        _ = result.Should().BeOfType<RedirectToActionResult>().Subject;
         sut.TempData["SuccessMessage"].Should().NotBeNull();
     }
 

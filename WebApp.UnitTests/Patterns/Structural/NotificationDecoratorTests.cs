@@ -41,10 +41,15 @@ public class NotificationDecoratorTests
     {
         var svc = new BaseNotificationService();
 
-        await svc.NotifyApplicationSubmittedAsync(new Application());
-        await svc.NotifyApplicationApprovedAsync(new Application());
-        await svc.NotifyApplicationRejectedAsync(new Application());
-        await svc.NotifyApplicationWithdrawnAsync(new Application());
+        var act1 = async () => await svc.NotifyApplicationSubmittedAsync(new Application());
+        var act2 = async () => await svc.NotifyApplicationApprovedAsync(new Application());
+        var act3 = async () => await svc.NotifyApplicationRejectedAsync(new Application());
+        var act4 = async () => await svc.NotifyApplicationWithdrawnAsync(new Application());
+
+        await act1.Should().NotThrowAsync();
+        await act2.Should().NotThrowAsync();
+        await act3.Should().NotThrowAsync();
+        await act4.Should().NotThrowAsync();
     }
 
  
@@ -52,57 +57,57 @@ public class NotificationDecoratorTests
     [Fact]
     public async Task LoggingNotificationDecorator_NotifyApplicationSubmittedAsync_DelegatesToInner()
     {
-        var inner = new Mock<INotificationService>();
-        inner.Setup(x => x.NotifyApplicationSubmittedAsync(It.IsAny<Application>())).Returns(Task.CompletedTask);
+        var innerMock = new Mock<INotificationService>();
+        innerMock.Setup(x => x.NotifyApplicationSubmittedAsync(It.IsAny<Application>())).Returns(Task.CompletedTask);
 
-        var sut = new LoggingNotificationDecorator(inner.Object, Mock.Of<ILogger<LoggingNotificationDecorator>>());
+        var decorator = new LoggingNotificationDecorator(innerMock.Object, Mock.Of<ILogger<LoggingNotificationDecorator>>());
 
-        var app = new Application { Id = 1, VolunteerId = 10, ProjectId = 20 };
-        await sut.NotifyApplicationSubmittedAsync(app);
+        var application = new Application { Id = 1, VolunteerId = 10, ProjectId = 20 };
+        await decorator.NotifyApplicationSubmittedAsync(application);
 
-        inner.Verify(x => x.NotifyApplicationSubmittedAsync(app), Times.Once);
+        innerMock.Verify(x => x.NotifyApplicationSubmittedAsync(application), Times.Once);
     }
 
     [Fact]
     public async Task LoggingNotificationDecorator_NotifyApplicationApprovedAsync_DelegatesToInner()
     {
-        var inner = new Mock<INotificationService>();
-        inner.Setup(x => x.NotifyApplicationApprovedAsync(It.IsAny<Application>())).Returns(Task.CompletedTask);
+        var innerMock = new Mock<INotificationService>();
+        innerMock.Setup(x => x.NotifyApplicationApprovedAsync(It.IsAny<Application>())).Returns(Task.CompletedTask);
 
-        var sut = new LoggingNotificationDecorator(inner.Object, Mock.Of<ILogger<LoggingNotificationDecorator>>());
+        var decorator = new LoggingNotificationDecorator(innerMock.Object, Mock.Of<ILogger<LoggingNotificationDecorator>>());
 
-        var app = new Application { Id = 1, VolunteerId = 10, ProjectId = 20 };
-        await sut.NotifyApplicationApprovedAsync(app);
+        var application = new Application { Id = 1, VolunteerId = 10, ProjectId = 20 };
+        await decorator.NotifyApplicationApprovedAsync(application);
 
-        inner.Verify(x => x.NotifyApplicationApprovedAsync(app), Times.Once);
+        innerMock.Verify(x => x.NotifyApplicationApprovedAsync(application), Times.Once);
     }
 
     [Fact]
     public async Task LoggingNotificationDecorator_NotifyApplicationRejectedAsync_DelegatesToInner()
     {
-        var inner = new Mock<INotificationService>();
-        inner.Setup(x => x.NotifyApplicationRejectedAsync(It.IsAny<Application>())).Returns(Task.CompletedTask);
+        var innerMock = new Mock<INotificationService>();
+        innerMock.Setup(x => x.NotifyApplicationRejectedAsync(It.IsAny<Application>())).Returns(Task.CompletedTask);
 
-        var sut = new LoggingNotificationDecorator(inner.Object, Mock.Of<ILogger<LoggingNotificationDecorator>>());
+        var decorator = new LoggingNotificationDecorator(innerMock.Object, Mock.Of<ILogger<LoggingNotificationDecorator>>());
 
-        var app = new Application { Id = 1, VolunteerId = 10, ProjectId = 20 };
-        await sut.NotifyApplicationRejectedAsync(app);
+        var application = new Application { Id = 1, VolunteerId = 10, ProjectId = 20 };
+        await decorator.NotifyApplicationRejectedAsync(application);
 
-        inner.Verify(x => x.NotifyApplicationRejectedAsync(app), Times.Once);
+        innerMock.Verify(x => x.NotifyApplicationRejectedAsync(application), Times.Once);
     }
 
     [Fact]
     public async Task LoggingNotificationDecorator_NotifyApplicationWithdrawnAsync_DelegatesToInner()
     {
-        var inner = new Mock<INotificationService>();
-        inner.Setup(x => x.NotifyApplicationWithdrawnAsync(It.IsAny<Application>())).Returns(Task.CompletedTask);
+        var innerMock = new Mock<INotificationService>();
+        innerMock.Setup(x => x.NotifyApplicationWithdrawnAsync(It.IsAny<Application>())).Returns(Task.CompletedTask);
 
-        var sut = new LoggingNotificationDecorator(inner.Object, Mock.Of<ILogger<LoggingNotificationDecorator>>());
+        var decorator = new LoggingNotificationDecorator(innerMock.Object, Mock.Of<ILogger<LoggingNotificationDecorator>>());
 
-        var app = new Application { Id = 1, VolunteerId = 10, ProjectId = 20 };
-        await sut.NotifyApplicationWithdrawnAsync(app);
+        var application = new Application { Id = 1, VolunteerId = 10, ProjectId = 20 };
+        await decorator.NotifyApplicationWithdrawnAsync(application);
 
-        inner.Verify(x => x.NotifyApplicationWithdrawnAsync(app), Times.Once);
+        innerMock.Verify(x => x.NotifyApplicationWithdrawnAsync(application), Times.Once);
     }
 
    
@@ -112,52 +117,52 @@ public class NotificationDecoratorTests
     [Fact]
     public async Task EmailNotificationDecorator_NotifyApplicationApprovedAsync_DelegatesToInner()
     {
-        var inner = new Mock<INotificationService>();
-        inner.Setup(x => x.NotifyApplicationApprovedAsync(It.IsAny<Application>())).Returns(Task.CompletedTask);
+        var innerMock = new Mock<INotificationService>();
+        innerMock.Setup(x => x.NotifyApplicationApprovedAsync(It.IsAny<Application>())).Returns(Task.CompletedTask);
 
-        var sut = new EmailNotificationDecorator(inner.Object, Mock.Of<ILogger<EmailNotificationDecorator>>());
+        var decorator = new EmailNotificationDecorator(innerMock.Object, Mock.Of<ILogger<EmailNotificationDecorator>>());
 
-        var app = new Application
+        var application = new Application
         {
             Id = 1,
             Volunteer = new Volunteer { Email = "volunteer@example.com" },
             Project = new Project { Title = "Test Project" }
         };
 
-        await sut.NotifyApplicationApprovedAsync(app);
+        await decorator.NotifyApplicationApprovedAsync(application);
 
-        inner.Verify(x => x.NotifyApplicationApprovedAsync(app), Times.Once);
+        innerMock.Verify(x => x.NotifyApplicationApprovedAsync(application), Times.Once);
     }
 
     [Fact]
     public async Task EmailNotificationDecorator_NotifyApplicationRejectedAsync_DelegatesToInner()
     {
-        var inner = new Mock<INotificationService>();
-        inner.Setup(x => x.NotifyApplicationRejectedAsync(It.IsAny<Application>())).Returns(Task.CompletedTask);
+        var innerMock = new Mock<INotificationService>();
+        innerMock.Setup(x => x.NotifyApplicationRejectedAsync(It.IsAny<Application>())).Returns(Task.CompletedTask);
 
-        var sut = new EmailNotificationDecorator(inner.Object, Mock.Of<ILogger<EmailNotificationDecorator>>());
+        var decorator = new EmailNotificationDecorator(innerMock.Object, Mock.Of<ILogger<EmailNotificationDecorator>>());
 
-        var app = new Application
+        var application = new Application
         {
             Id = 3,
             Volunteer = new Volunteer { Email = "vol@example.com" },
             Project = new Project { Title = "Project" }
         };
 
-        await sut.NotifyApplicationRejectedAsync(app);
+        await decorator.NotifyApplicationRejectedAsync(application);
 
-        inner.Verify(x => x.NotifyApplicationRejectedAsync(app), Times.Once);
+        innerMock.Verify(x => x.NotifyApplicationRejectedAsync(application), Times.Once);
     }
 
     [Fact]
     public async Task EmailNotificationDecorator_NotifyApplicationSubmittedAsync_DelegatesToInner()
     {
-        var inner = new Mock<INotificationService>();
-        inner.Setup(x => x.NotifyApplicationSubmittedAsync(It.IsAny<Application>())).Returns(Task.CompletedTask);
+        var innerMock = new Mock<INotificationService>();
+        innerMock.Setup(x => x.NotifyApplicationSubmittedAsync(It.IsAny<Application>())).Returns(Task.CompletedTask);
 
-        var sut = new EmailNotificationDecorator(inner.Object, Mock.Of<ILogger<EmailNotificationDecorator>>());
+        var decorator = new EmailNotificationDecorator(innerMock.Object, Mock.Of<ILogger<EmailNotificationDecorator>>());
 
-        var app = new Application
+        var application = new Application
         {
             Id = 2,
             Volunteer = new Volunteer { Email = "v@example.com" },
@@ -168,43 +173,43 @@ public class NotificationDecoratorTests
             }
         };
 
-        await sut.NotifyApplicationSubmittedAsync(app);
+        await decorator.NotifyApplicationSubmittedAsync(application);
 
-        inner.Verify(x => x.NotifyApplicationSubmittedAsync(app), Times.Once);
+        innerMock.Verify(x => x.NotifyApplicationSubmittedAsync(application), Times.Once);
     }
 
     [Fact]
     public async Task EmailNotificationDecorator_NotifyApplicationWithdrawnAsync_DelegatesToInner()
     {
-        var inner = new Mock<INotificationService>();
-        inner.Setup(x => x.NotifyApplicationWithdrawnAsync(It.IsAny<Application>())).Returns(Task.CompletedTask);
+        var innerMock = new Mock<INotificationService>();
+        innerMock.Setup(x => x.NotifyApplicationWithdrawnAsync(It.IsAny<Application>())).Returns(Task.CompletedTask);
 
-        var sut = new EmailNotificationDecorator(inner.Object, Mock.Of<ILogger<EmailNotificationDecorator>>());
+        var decorator = new EmailNotificationDecorator(innerMock.Object, Mock.Of<ILogger<EmailNotificationDecorator>>());
 
-        var app = new Application
+        var application = new Application
         {
             Id = 4,
             Volunteer = new Volunteer { Email = "vol@example.com" }
         };
 
-        await sut.NotifyApplicationWithdrawnAsync(app);
+        await decorator.NotifyApplicationWithdrawnAsync(application);
 
-        inner.Verify(x => x.NotifyApplicationWithdrawnAsync(app), Times.Once);
+        innerMock.Verify(x => x.NotifyApplicationWithdrawnAsync(application), Times.Once);
     }
 
     [Fact]
     public async Task EmailNotificationDecorator_WhenVolunteerEmailNull_HandlesGracefully()
     {
-        var inner = new Mock<INotificationService>();
-        inner.Setup(x => x.NotifyApplicationApprovedAsync(It.IsAny<Application>())).Returns(Task.CompletedTask);
+        var innerMock = new Mock<INotificationService>();
+        innerMock.Setup(x => x.NotifyApplicationApprovedAsync(It.IsAny<Application>())).Returns(Task.CompletedTask);
 
-        var sut = new EmailNotificationDecorator(inner.Object, Mock.Of<ILogger<EmailNotificationDecorator>>());
+        var decorator = new EmailNotificationDecorator(innerMock.Object, Mock.Of<ILogger<EmailNotificationDecorator>>());
 
-        var app = new Application { Id = 1 };
+        var application = new Application { Id = 1 };
 
-        await sut.NotifyApplicationApprovedAsync(app);
+        await decorator.NotifyApplicationApprovedAsync(application);
 
-        inner.Verify(x => x.NotifyApplicationApprovedAsync(app), Times.Once);
+        innerMock.Verify(x => x.NotifyApplicationApprovedAsync(application), Times.Once);
     }
 
     
@@ -214,57 +219,57 @@ public class NotificationDecoratorTests
     [Fact]
     public async Task StatisticsNotificationDecorator_NotifyApplicationApprovedAsync_DelegatesToInner()
     {
-        var inner = new Mock<INotificationService>();
-        inner.Setup(x => x.NotifyApplicationApprovedAsync(It.IsAny<Application>())).Returns(Task.CompletedTask);
+        var innerMock = new Mock<INotificationService>();
+        innerMock.Setup(x => x.NotifyApplicationApprovedAsync(It.IsAny<Application>())).Returns(Task.CompletedTask);
 
-        var sut = new StatisticsNotificationDecorator(inner.Object, Mock.Of<ILogger<StatisticsNotificationDecorator>>());
+        var decorator = new StatisticsNotificationDecorator(innerMock.Object, Mock.Of<ILogger<StatisticsNotificationDecorator>>());
 
-        var app = new Application { Id = 2 };
-        await sut.NotifyApplicationApprovedAsync(app);
+        var application = new Application { Id = 2 };
+        await decorator.NotifyApplicationApprovedAsync(application);
 
-        inner.Verify(x => x.NotifyApplicationApprovedAsync(app), Times.Once);
+        innerMock.Verify(x => x.NotifyApplicationApprovedAsync(application), Times.Once);
     }
 
     [Fact]
     public async Task StatisticsNotificationDecorator_NotifyApplicationRejectedAsync_DelegatesToInner()
     {
-        var inner = new Mock<INotificationService>();
-        inner.Setup(x => x.NotifyApplicationRejectedAsync(It.IsAny<Application>())).Returns(Task.CompletedTask);
+        var innerMock = new Mock<INotificationService>();
+        innerMock.Setup(x => x.NotifyApplicationRejectedAsync(It.IsAny<Application>())).Returns(Task.CompletedTask);
 
-        var sut = new StatisticsNotificationDecorator(inner.Object, Mock.Of<ILogger<StatisticsNotificationDecorator>>());
+        var decorator = new StatisticsNotificationDecorator(innerMock.Object, Mock.Of<ILogger<StatisticsNotificationDecorator>>());
 
-        var app = new Application { Id = 3 };
-        await sut.NotifyApplicationRejectedAsync(app);
+        var application = new Application { Id = 3 };
+        await decorator.NotifyApplicationRejectedAsync(application);
 
-        inner.Verify(x => x.NotifyApplicationRejectedAsync(app), Times.Once);
+        innerMock.Verify(x => x.NotifyApplicationRejectedAsync(application), Times.Once);
     }
 
     [Fact]
     public async Task StatisticsNotificationDecorator_NotifyApplicationSubmittedAsync_DelegatesToInner()
     {
-        var inner = new Mock<INotificationService>();
-        inner.Setup(x => x.NotifyApplicationSubmittedAsync(It.IsAny<Application>())).Returns(Task.CompletedTask);
+        var innerMock = new Mock<INotificationService>();
+        innerMock.Setup(x => x.NotifyApplicationSubmittedAsync(It.IsAny<Application>())).Returns(Task.CompletedTask);
 
-        var sut = new StatisticsNotificationDecorator(inner.Object, Mock.Of<ILogger<StatisticsNotificationDecorator>>());
+        var decorator = new StatisticsNotificationDecorator(innerMock.Object, Mock.Of<ILogger<StatisticsNotificationDecorator>>());
 
-        var app = new Application { Id = 1 };
-        await sut.NotifyApplicationSubmittedAsync(app);
+        var application = new Application { Id = 1 };
+        await decorator.NotifyApplicationSubmittedAsync(application);
 
-        inner.Verify(x => x.NotifyApplicationSubmittedAsync(app), Times.Once);
+        innerMock.Verify(x => x.NotifyApplicationSubmittedAsync(application), Times.Once);
     }
 
     [Fact]
     public async Task StatisticsNotificationDecorator_NotifyApplicationWithdrawnAsync_DelegatesToInner()
     {
-        var inner = new Mock<INotificationService>();
-        inner.Setup(x => x.NotifyApplicationWithdrawnAsync(It.IsAny<Application>())).Returns(Task.CompletedTask);
+        var innerMock = new Mock<INotificationService>();
+        innerMock.Setup(x => x.NotifyApplicationWithdrawnAsync(It.IsAny<Application>())).Returns(Task.CompletedTask);
 
-        var sut = new StatisticsNotificationDecorator(inner.Object, Mock.Of<ILogger<StatisticsNotificationDecorator>>());
+        var decorator = new StatisticsNotificationDecorator(innerMock.Object, Mock.Of<ILogger<StatisticsNotificationDecorator>>());
 
-        var app = new Application { Id = 4 };
-        await sut.NotifyApplicationWithdrawnAsync(app);
+        var application = new Application { Id = 4 };
+        await decorator.NotifyApplicationWithdrawnAsync(application);
 
-        inner.Verify(x => x.NotifyApplicationWithdrawnAsync(app), Times.Once);
+        innerMock.Verify(x => x.NotifyApplicationWithdrawnAsync(application), Times.Once);
     }
 
     

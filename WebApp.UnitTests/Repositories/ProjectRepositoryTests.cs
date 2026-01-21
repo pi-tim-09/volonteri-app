@@ -10,6 +10,7 @@ public class ProjectRepositoryTests : IDisposable
 {
     private readonly ApplicationDbContext _context;
     private readonly ProjectRepository _repository;
+    private bool _disposed = false;
 
     public ProjectRepositoryTests()
     {
@@ -21,10 +22,24 @@ public class ProjectRepositoryTests : IDisposable
         _repository = new ProjectRepository(_context);
     }
 
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing)
+            {
+                _context.Database.EnsureDeleted();
+                _context.Dispose();
+            }
+
+            _disposed = true;
+        }
+    }
+
     public void Dispose()
     {
-        _context.Database.EnsureDeleted();
-        _context.Dispose();
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 
     [Fact]
@@ -102,8 +117,9 @@ public class ProjectRepositoryTests : IDisposable
         // Assert
         result.Should().NotBeNull();
         result!.Applications.Should().HaveCount(1);
-        result.Applications.First().Volunteer.Should().NotBeNull();
-        result.Applications.First().Volunteer.Id.Should().Be(volunteer.Id);
+        var firstApplication = result.Applications[0];
+        firstApplication.Volunteer.Should().NotBeNull();
+        firstApplication.Volunteer.Id.Should().Be(volunteer.Id);
     }
 
     [Fact]
@@ -149,7 +165,8 @@ public class ProjectRepositoryTests : IDisposable
         // Assert
         result.Should().HaveCount(1);
         result.Should().OnlyContain(p => p.City == "Zagreb" && p.Status == ProjectStatus.Published);
-        result.First().Id.Should().Be(project1.Id);
+        var firstProject = result[0];
+        firstProject.Id.Should().Be(project1.Id);
     }
 
     [Fact]
@@ -268,7 +285,8 @@ public class ProjectRepositoryTests : IDisposable
 
         // Assert
         result.Should().HaveCount(1);
-        result.First().Id.Should().Be(project1.Id, "only published, not full, with future deadline projects should be available");
+        var availableProject = result[0];
+        availableProject.Id.Should().Be(project1.Id, "only published, not full, with future deadline projects should be available");
     }
 
     [Fact]

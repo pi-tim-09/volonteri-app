@@ -255,8 +255,8 @@ public class OrganizationsApiControllerTests
         _organizationService.Verify(s => s.CreateOrganizationAsync(It.Is<Organization>(o =>
             o.Email == request.Email &&
             o.PasswordHash == hashedPassword &&
-            o.IsActive == true &&
-            o.IsVerified == false
+            o.IsActive &&
+            !o.IsVerified
         )), Times.Once);
     }
 
@@ -384,7 +384,7 @@ public class OrganizationsApiControllerTests
             o.Id == 1 &&
             o.Email == request.Email &&
             o.OrganizationName == request.OrganizationName &&
-            o.IsActive == false
+            !o.IsActive
         )), Times.Once);
     }
 
