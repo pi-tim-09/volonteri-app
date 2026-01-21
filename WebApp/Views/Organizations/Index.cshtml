@@ -65,7 +65,8 @@
                             </div>
                         </div>
                         <div class="card-footer bg-light">
-                            <div class="btn-group w-100" role="group">
+                            <fieldset class="btn-group w-100" aria-label="Organization actions">
+                                <legend class="visually-hidden">Organization actions</legend>
                                 <a asp-action="Details" asp-route-id="@org.Id" class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-eye"></i> Details
                                 </a>
@@ -75,7 +76,7 @@
                                 <a asp-controller="Projects" asp-action="Index" asp-route-organizationId="@org.Id" class="btn btn-sm btn-outline-info">
                                     <i class="bi bi-folder"></i> Projects
                                 </a>
-                            </div>
+                            </fieldset>
                         </div>
                     </div>
                 </div>

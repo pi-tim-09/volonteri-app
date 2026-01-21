@@ -35,7 +35,16 @@
             {
                 var spotsLeft = project.MaxVolunteers - project.CurrentVolunteers;
                 var percentFull = (project.CurrentVolunteers * 100.0) / project.MaxVolunteers;
-                var progressColor = percentFull >= 90 ? "bg-danger" : percentFull >= 70 ? "bg-warning" : "bg-success";
+                // Extract nested ternary into an independent statement for readability and to satisfy S3358
+                var progressColor = "bg-success";
+                if (percentFull >= 90)
+                {
+                    progressColor = "bg-danger";
+                }
+                else if (percentFull >= 70)
+                {
+                    progressColor = "bg-warning";
+                }
                 var statusBadge = project.Status switch
                 {
                     ProjectStatus.Published => "badge bg-success",
@@ -81,15 +90,8 @@
                             <div class="mb-2">
                                 <strong><i class="bi bi-people-fill text-primary"></i> Volunteers:</strong><br/>
                                 <div class="d-flex align-items-center">
-                                    <div class="progress flex-grow-1 me-2" style="height: 20px;">
-                                        <div class="progress-bar @progressColor" 
-                                             role="progressbar" 
-                                             style="width: @percentFull%" 
-                                             aria-valuenow="@project.CurrentVolunteers" 
-                                             aria-valuemin="0" 
-                                             aria-valuemax="@project.MaxVolunteers">
-                                        </div>
-                                    </div>
+                                    @* Use native <progress> element instead of role="progressbar" for better accessibility (S6819) *@
+                                    <progress class="flex-grow-1 me-2 @progressColor" value="@project.CurrentVolunteers" max="@project.MaxVolunteers" aria-label="Volunteers progress" style="height:20px; width:100%;"></progress>
                                     <small class="text-nowrap">@project.CurrentVolunteers/@project.MaxVolunteers</small>
                                 </div>
                                 <small class="text-muted">@spotsLeft spots left</small>
@@ -122,7 +124,8 @@
                             }
                         </div>
                         <div class="card-footer bg-light">
-                            <div class="btn-group w-100" role="group">
+                            <fieldset class="btn-group w-100" aria-label="Project actions">
+                                <legend class="visually-hidden">Project actions</legend>
                                 <a asp-action="Details" asp-route-id="@project.Id" class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-eye"></i> Details
                                 </a>
@@ -132,7 +135,7 @@
                                 <a asp-controller="Applications" asp-action="Manage" asp-route-projectId="@project.Id" class="btn btn-sm btn-outline-info">
                                     <i class="bi bi-file-text"></i> Applications
                                 </a>
-                            </div>
+                            </fieldset>
                         </div>
                     </div>
                 </div>
