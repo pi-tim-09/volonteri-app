@@ -945,8 +945,10 @@ public class ProjectServiceTests
         Func<Task> act = async () => await sut.CreateProjectAsync(project);
 
         // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Database error");
+        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
+        exception.WithMessage("Failed to create project 'Test'. See inner exception for details.");
+        exception.And.InnerException.Should().BeOfType<InvalidOperationException>()
+            .Which.Message.Should().Be("Database error");
     }
 
     [Fact]
@@ -964,8 +966,10 @@ public class ProjectServiceTests
         Func<Task> act = async () => await sut.UpdateProjectAsync(1, new Project { Title = "Updated" });
 
         // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Update failed");
+        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
+        exception.WithMessage("Failed to update project with ID 1. See inner exception for details.");
+        exception.And.InnerException.Should().BeOfType<InvalidOperationException>()
+            .Which.Message.Should().Be("Update failed");
     }
 
     [Fact]
@@ -981,8 +985,10 @@ public class ProjectServiceTests
         Func<Task> act = async () => await sut.GetProjectByIdAsync(1);
 
         // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Get failed");
+        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
+        exception.WithMessage("Failed to retrieve project with ID 1. See inner exception for details.");
+        exception.And.InnerException.Should().BeOfType<InvalidOperationException>()
+            .Which.Message.Should().Be("Get failed");
     }
 
     [Fact]
@@ -998,7 +1004,9 @@ public class ProjectServiceTests
         Func<Task> act = async () => await sut.GetAllProjectsAsync();
 
         // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("GetAll failed");
+        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
+        exception.WithMessage("Failed to retrieve project list. See inner exception for details.");
+        exception.And.InnerException.Should().BeOfType<InvalidOperationException>()
+            .Which.Message.Should().Be("GetAll failed");
     }
 }

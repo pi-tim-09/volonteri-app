@@ -21,7 +21,7 @@ namespace WebApp.Repositories
             return await _dbSet
                 .Where(a => a.VolunteerId == volunteerId)
                 .Include(a => a.Project)
-                    .ThenInclude(p => p.Organization)
+                    .ThenInclude(p => p!.Organization)
                 .ToListAsync();
         }
 
@@ -38,7 +38,7 @@ namespace WebApp.Repositories
             return await _dbSet
                 .Include(a => a.Volunteer)
                 .Include(a => a.Project)
-                    .ThenInclude(p => p.Organization)
+                    .ThenInclude(p => p!.Organization)
                 .FirstOrDefaultAsync(a => a.Id == id);
         }
 

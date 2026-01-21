@@ -2,7 +2,6 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using WebApp.Controllers;
@@ -24,8 +23,7 @@ public class AccountControllerTests
     {
         _uow.SetupGet(x => x.Volunteers).Returns(_volRepo.Object);
 
-        var cfg = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>()).Build();
-        var controller = new AccountController(_uow.Object, cfg, _hasher.Object, _logger.Object)
+        var controller = new AccountController(_uow.Object, _hasher.Object, _logger.Object)
         {
             ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() },
             TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>())
@@ -62,7 +60,15 @@ public class AccountControllerTests
         var sut = CreateSut();
         sut.ModelState.AddModelError("Email", "Required");
 
-        var vm = new RegisterVM { Email = "x@x.com" };
+        var vm = new RegisterVM
+        {
+            Email = "x@x.com",
+            Password = "Password123!",
+            ConfirmPassword = "Password123!",
+            FirstName = "Test",
+            LastName = "User",
+            PhoneNumber = "123456789"
+        };
 
         var result = await sut.Register(vm);
 

@@ -44,7 +44,7 @@ namespace WebApp.Services
                 _logger.LogInformation("Created new admin: {Email}", admin.Email);
                 return created;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not ArgumentNullException)
             {
                 var email = admin?.Email ?? "unknown";
                 _logger.LogError(ex, "Error creating admin: {Email}", email);

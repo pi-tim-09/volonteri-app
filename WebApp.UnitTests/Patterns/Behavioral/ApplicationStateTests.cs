@@ -11,7 +11,7 @@ public class ApplicationStateTests
     [Fact]
     public void ApplicationStateFactory_WhenUnknownStatus_Throws()
     {
-        var factory = new ApplicationStateFactory(Mock.Of<ILogger<ApplicationStateContext>>());
+        var factory = new ApplicationStateFactory(Mock.Of<ILogger<ApplicationStateFactory>>());
 
         Action act = () => factory.CreateState((ApplicationStatus)999);
 
@@ -22,7 +22,7 @@ public class ApplicationStateTests
     public async Task PendingState_Approve_TransitionsToAccepted_AndSetsReviewFields()
     {
         var app = new Application { Id = 1, Status = ApplicationStatus.Pending };
-        var factory = new ApplicationStateFactory(Mock.Of<ILogger<ApplicationStateContext>>());
+        var factory = new ApplicationStateFactory(Mock.Of<ILogger<ApplicationStateFactory>>());
         var ctx = new ApplicationStateContext(app, factory, Mock.Of<ILogger<ApplicationStateContext>>());
 
         var ok = await ctx.ApproveAsync("notes");
@@ -38,7 +38,7 @@ public class ApplicationStateTests
     public async Task PendingState_Reject_TransitionsToRejected_AndSetsReviewFields()
     {
         var app = new Application { Id = 1, Status = ApplicationStatus.Pending };
-        var factory = new ApplicationStateFactory(Mock.Of<ILogger<ApplicationStateContext>>());
+        var factory = new ApplicationStateFactory(Mock.Of<ILogger<ApplicationStateFactory>>());
         var ctx = new ApplicationStateContext(app, factory, Mock.Of<ILogger<ApplicationStateContext>>());
 
         var ok = await ctx.RejectAsync("rejection notes");
@@ -54,7 +54,7 @@ public class ApplicationStateTests
     public async Task AcceptedState_Complete_TransitionsToCompleted()
     {
         var app = new Application { Id = 2, Status = ApplicationStatus.Accepted };
-        var factory = new ApplicationStateFactory(Mock.Of<ILogger<ApplicationStateContext>>());
+        var factory = new ApplicationStateFactory(Mock.Of<ILogger<ApplicationStateFactory>>());
         var ctx = new ApplicationStateContext(app, factory, Mock.Of<ILogger<ApplicationStateContext>>());
 
         (await ctx.CompleteAsync()).Should().BeTrue();
@@ -65,7 +65,7 @@ public class ApplicationStateTests
     public async Task AcceptedState_Withdraw_TransitionsToWithdrawn()
     {
         var app = new Application { Id = 3, Status = ApplicationStatus.Accepted };
-        var factory = new ApplicationStateFactory(Mock.Of<ILogger<ApplicationStateContext>>());
+        var factory = new ApplicationStateFactory(Mock.Of<ILogger<ApplicationStateFactory>>());
         var ctx = new ApplicationStateContext(app, factory, Mock.Of<ILogger<ApplicationStateContext>>());
 
         (await ctx.WithdrawAsync()).Should().BeTrue();
@@ -76,7 +76,7 @@ public class ApplicationStateTests
     public async Task RejectedState_CannotApproveRejectWithdrawComplete()
     {
         var app = new Application { Id = 4, Status = ApplicationStatus.Rejected };
-        var factory = new ApplicationStateFactory(Mock.Of<ILogger<ApplicationStateContext>>());
+        var factory = new ApplicationStateFactory(Mock.Of<ILogger<ApplicationStateFactory>>());
         var ctx = new ApplicationStateContext(app, factory, Mock.Of<ILogger<ApplicationStateContext>>());
 
         ctx.CanApprove().Should().BeFalse();

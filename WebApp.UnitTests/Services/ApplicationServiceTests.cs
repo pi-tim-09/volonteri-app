@@ -36,10 +36,13 @@ public class ApplicationServiceTests
         _unitOfWork.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
         
         
-        var stateFactory = new ApplicationStateFactory(new Mock<ILogger<ApplicationStateContext>>().Object);
+        var stateFactory = new ApplicationStateFactory(new Mock<ILogger<ApplicationStateFactory>>().Object);
+        var loggerFactory = new Mock<ILoggerFactory>();
+        loggerFactory.Setup(x => x.CreateLogger(It.IsAny<string>()))
+            .Returns(new Mock<ILogger<ApplicationStateContext>>().Object);
         var realFactory = new ApplicationStateContextFactory(
             stateFactory,
-            new Mock<ILogger<ApplicationStateContext>>().Object);
+            loggerFactory.Object);
         
         _stateContextFactory.Setup(x => x.CreateContext(It.IsAny<Application>()))
             .Returns((Application app) => realFactory.CreateContext(app ?? _testApplication));
@@ -875,6 +878,7 @@ public class ApplicationServiceTests
         Func<Task> act = async () => await sut.CreateApplicationAsync(1, 1);
 
         // Assert
+        // InvalidOperationException passes through the exception filter and is not wrapped
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Database error");
     }
@@ -892,8 +896,10 @@ public class ApplicationServiceTests
         Func<Task> act = async () => await sut.GetApplicationByIdAsync(1);
 
         // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Get failed");
+        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
+        exception.WithMessage("Failed to retrieve application with ID 1. See inner exception for details.");
+        exception.And.InnerException.Should().BeOfType<InvalidOperationException>()
+            .Which.Message.Should().Be("Get failed");
     }
 
     [Fact]
@@ -911,8 +917,10 @@ public class ApplicationServiceTests
         Func<Task> act = async () => await sut.DeleteApplicationAsync(1);
 
         // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Delete failed");
+        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
+        exception.WithMessage("Failed to delete application with ID 1. See inner exception for details.");
+        exception.And.InnerException.Should().BeOfType<InvalidOperationException>()
+            .Which.Message.Should().Be("Delete failed");
     }
 
     [Fact]
@@ -931,8 +939,10 @@ public class ApplicationServiceTests
         Func<Task> act = async () => await sut.ApproveApplicationAsync(1, "Notes");
 
         // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Approve failed");
+        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
+        exception.WithMessage("Failed to approve application with ID 1. See inner exception for details.");
+        exception.And.InnerException.Should().BeOfType<InvalidOperationException>()
+            .Which.Message.Should().Be("Approve failed");
     }
 
     
