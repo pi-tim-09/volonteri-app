@@ -226,9 +226,9 @@ public class AdminFactoryTests
 
         // Assert 
         var allAdminsHaveNoPermissions = 
-            admin1!.CanManageUsers == false &&
-            admin2!.CanManageOrganizations == false &&
-            admin3!.CanManageProjects == false;
+            !admin1!.CanManageUsers &&
+            !admin2!.CanManageOrganizations &&
+            !admin3!.CanManageProjects;
 
         allAdminsHaveNoPermissions.Should().BeTrue("business rule: all new admins must be created without permissions");
     }

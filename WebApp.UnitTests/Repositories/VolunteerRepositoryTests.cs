@@ -10,6 +10,7 @@ public class VolunteerRepositoryTests : IDisposable
 {
     private readonly ApplicationDbContext _context;
     private readonly VolunteerRepository _repository;
+    private bool _disposed = false;
 
     public VolunteerRepositoryTests()
     {
@@ -21,10 +22,24 @@ public class VolunteerRepositoryTests : IDisposable
         _repository = new VolunteerRepository(_context);
     }
 
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing)
+            {
+                _context.Database.EnsureDeleted();
+                _context.Dispose();
+            }
+
+            _disposed = true;
+        }
+    }
+
     public void Dispose()
     {
-        _context.Database.EnsureDeleted();
-        _context.Dispose();
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 
     [Fact]
@@ -203,8 +218,9 @@ public class VolunteerRepositoryTests : IDisposable
         // Assert
         result.Should().NotBeNull();
         result!.Applications.Should().HaveCount(1);
-        result.Applications.First().Project.Should().NotBeNull();
-        result.Applications.First().Project.Id.Should().Be(project.Id);
+        var firstApplication = result.Applications[0];
+        firstApplication.Project.Should().NotBeNull();
+        firstApplication.Project.Id.Should().Be(project.Id);
     }
 
     [Fact]

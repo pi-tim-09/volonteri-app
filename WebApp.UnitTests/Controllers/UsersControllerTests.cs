@@ -248,7 +248,7 @@ public class UsersControllerTests
         var result = await sut.Create(userVm);
 
         // Assert
-        var viewResult = result.Should().BeOfType<ViewResult>().Subject;
+        _ = result.Should().BeOfType<ViewResult>().Subject;
         sut.ModelState.ErrorCount.Should().BeGreaterThan(0);
     }
 
@@ -344,7 +344,7 @@ public class UsersControllerTests
         var result = await sut.Edit(1, userVm);
 
         // Assert
-        var viewResult = result.Should().BeOfType<ViewResult>().Subject;
+        _ = result.Should().BeOfType<ViewResult>().Subject;
         sut.ModelState.ErrorCount.Should().BeGreaterThan(0);
     }
 

@@ -10,6 +10,7 @@ public class ProjectRepositoryTests : IDisposable
 {
     private readonly ApplicationDbContext _context;
     private readonly ProjectRepository _repository;
+    private bool _disposed = false;
 
     public ProjectRepositoryTests()
     {
@@ -21,10 +22,24 @@ public class ProjectRepositoryTests : IDisposable
         _repository = new ProjectRepository(_context);
     }
 
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing)
+            {
+                _context.Database.EnsureDeleted();
+                _context.Dispose();
+            }
+
+            _disposed = true;
+        }
+    }
+
     public void Dispose()
     {
-        _context.Database.EnsureDeleted();
-        _context.Dispose();
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 
     [Fact]
@@ -102,8 +117,9 @@ public class ProjectRepositoryTests : IDisposable
         // Assert
         result.Should().NotBeNull();
         result!.Applications.Should().HaveCount(1);
-        result.Applications.First().Volunteer.Should().NotBeNull();
-        result.Applications.First().Volunteer.Id.Should().Be(volunteer.Id);
+        var firstApplication = result.Applications[0];
+        firstApplication.Volunteer.Should().NotBeNull();
+        firstApplication.Volunteer.Id.Should().Be(volunteer.Id);
     }
 
     [Fact]
@@ -337,3 +353,4 @@ public class ProjectRepositoryTests : IDisposable
         result.Should().BeFalse();
     }
 }
+

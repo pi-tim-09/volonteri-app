@@ -117,7 +117,7 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
     public async Task GetOrganizations_IncludesOrganizationDetails()
     {
         // Arrange
-        var testOrg = await CreateTestOrganizationInDb("detailed@example.com");
+       await CreateTestOrganizationInDb("detailed@example.com");
 
         // Act
         var response = await _client.GetAsync("/api/organizations");
@@ -407,7 +407,7 @@ public class OrganizationsApiIntegrationTests : IClassFixture<CustomWebApplicati
     {
         // Arrange
         var organization = await CreateTestOrganizationInDb($"orgwithproj{Guid.NewGuid():N}@example.com");
-        var project = await CreateTestProjectForOrganization(organization.Id);
+        await CreateTestProjectForOrganization(organization.Id);
         
         
         using (var scope = _factory.Services.CreateScope())

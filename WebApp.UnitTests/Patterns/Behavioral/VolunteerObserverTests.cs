@@ -86,18 +86,28 @@ public class VolunteerObserverTests
     public async Task LoggingVolunteerObserver_DoesNotThrow()
     {
         var obs = new LoggingVolunteerObserver(Mock.Of<ILogger<LoggingVolunteerObserver>>());
-        await obs.OnVolunteerRegisteredAsync(new Volunteer { Id = 1, Email = "x" });
-        await obs.OnVolunteerSkillsUpdatedAsync(new Volunteer { Id = 1, Email = "x" }, new List<string> { "A" });
-        await obs.OnVolunteerProjectCompletedAsync(new Volunteer { Id = 1, Email = "x" }, 1, 2);
+        
+        var act1 = async () => await obs.OnVolunteerRegisteredAsync(new Volunteer { Id = 1, Email = "x" });
+        var act2 = async () => await obs.OnVolunteerSkillsUpdatedAsync(new Volunteer { Id = 1, Email = "x" }, new List<string> { "A" });
+        var act3 = async () => await obs.OnVolunteerProjectCompletedAsync(new Volunteer { Id = 1, Email = "x" }, 1, 2);
+
+        await act1.Should().NotThrowAsync();
+        await act2.Should().NotThrowAsync();
+        await act3.Should().NotThrowAsync();
     }
 
     [Fact]
     public async Task NotificationVolunteerObserver_DoesNotThrow()
     {
         var obs = new NotificationVolunteerObserver(Mock.Of<ILogger<NotificationVolunteerObserver>>());
-        await obs.OnVolunteerRegisteredAsync(new Volunteer { Id = 1, Email = "x" });
-        await obs.OnVolunteerSkillsUpdatedAsync(new Volunteer { Id = 1, Email = "x" }, new List<string> { "A" });
-        await obs.OnVolunteerProjectCompletedAsync(new Volunteer { Id = 1, Email = "x" }, 1, 2);
+        
+        var act1 = async () => await obs.OnVolunteerRegisteredAsync(new Volunteer { Id = 1, Email = "x" });
+        var act2 = async () => await obs.OnVolunteerSkillsUpdatedAsync(new Volunteer { Id = 1, Email = "x" }, new List<string> { "A" });
+        var act3 = async () => await obs.OnVolunteerProjectCompletedAsync(new Volunteer { Id = 1, Email = "x" }, 1, 2);
+
+        await act1.Should().NotThrowAsync();
+        await act2.Should().NotThrowAsync();
+        await act3.Should().NotThrowAsync();
     }
 
     [Fact]
