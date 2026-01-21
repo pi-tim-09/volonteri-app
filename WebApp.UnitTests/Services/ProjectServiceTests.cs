@@ -78,7 +78,7 @@ public class ProjectServiceTests
             .ReturnsAsync((Project p) => p);
 
         // Act
-        var result = await sut.CreateProjectAsync(project);
+        await sut.CreateProjectAsync(project);
 
         // Assert
         capturedProject.Should().NotBeNull();

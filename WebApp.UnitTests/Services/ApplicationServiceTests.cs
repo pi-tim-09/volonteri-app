@@ -173,7 +173,7 @@ public class ApplicationServiceTests
             .ReturnsAsync((Application a) => a);
 
         // Act
-        var result = await sut.CreateApplicationAsync(1, 1);
+        await sut.CreateApplicationAsync(1, 1);
 
         // Assert
         capturedApp.Should().NotBeNull();

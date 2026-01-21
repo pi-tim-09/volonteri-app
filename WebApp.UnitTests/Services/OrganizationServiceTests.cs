@@ -89,7 +89,7 @@ public class OrganizationServiceTests
             .ReturnsAsync((Organization o) => o);
 
         // Act
-        var result = await sut.CreateOrganizationAsync(organization);
+        await sut.CreateOrganizationAsync(organization);
 
         // Assert
         capturedOrg.Should().NotBeNull();

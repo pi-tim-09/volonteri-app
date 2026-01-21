@@ -221,7 +221,7 @@ public class AccountControllerTests
     public void Logout_IsAsyncMethod()
     {
         
-        var sut = CreateSut();
+        CreateSut();
         
         
         var logoutMethod = typeof(AccountController).GetMethod("Logout");
