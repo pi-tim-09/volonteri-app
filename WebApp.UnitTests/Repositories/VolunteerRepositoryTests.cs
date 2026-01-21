@@ -159,8 +159,7 @@ public class VolunteerRepositoryTests : IDisposable
         // Assert
         result.Should().HaveCount(1);
         result.Should().OnlyContain(v => v.City == "Zagreb" && v.IsActive);
-        var firstVolunteer = result[0];
-        firstVolunteer.Id.Should().Be(volunteer1.Id);
+        result.First().Id.Should().Be(volunteer1.Id);
     }
 
     [Fact]

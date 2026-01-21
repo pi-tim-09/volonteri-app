@@ -165,8 +165,7 @@ public class ProjectRepositoryTests : IDisposable
         // Assert
         result.Should().HaveCount(1);
         result.Should().OnlyContain(p => p.City == "Zagreb" && p.Status == ProjectStatus.Published);
-        var firstProject = result[0];
-        firstProject.Id.Should().Be(project1.Id);
+        result.First().Id.Should().Be(project1.Id);
     }
 
     [Fact]
@@ -285,8 +284,7 @@ public class ProjectRepositoryTests : IDisposable
 
         // Assert
         result.Should().HaveCount(1);
-        var availableProject = result[0];
-        availableProject.Id.Should().Be(project1.Id, "only published, not full, with future deadline projects should be available");
+        result.First().Id.Should().Be(project1.Id, "only published, not full, with future deadline projects should be available");
     }
 
     [Fact]
@@ -355,3 +353,4 @@ public class ProjectRepositoryTests : IDisposable
         result.Should().BeFalse();
     }
 }
+
