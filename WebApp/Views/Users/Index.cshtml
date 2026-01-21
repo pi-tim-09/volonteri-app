@@ -103,14 +103,15 @@
                         </select>
                     </div>
                     <div class="col-md-2 d-flex align-items-end">
-                        <div class="btn-group w-100" role="group">
+                        <fieldset class="btn-group w-100" aria-label="Filter actions">
+                            <legend class="visually-hidden">Filter actions</legend>
                             <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-funnel"></i> Apply
                             </button>
                             <a href="@Url.Action("Index")" class="btn btn-secondary">
                                 <i class="bi bi-x-circle"></i> Clear
                             </a>
-                        </div>
+                        </fieldset>
                     </div>
                 </div>
             </form>
@@ -199,7 +200,8 @@
                                     }
                                 </td>
                                 <td>
-                                    <div class="btn-group btn-group-sm" role="group">
+                                    <fieldset class="btn-group btn-group-sm" aria-label="User actions">
+                                        <legend class="visually-hidden">User actions</legend>
                                         <a asp-action="Details" asp-route-id="@user.Id" 
                                            class="btn btn-info" title="View Details">
                                             <i class="bi bi-eye"></i>
@@ -212,7 +214,7 @@
                                            class="btn btn-danger" title="Delete">
                                             <i class="bi bi-trash"></i>
                                         </a>
-                                    </div>
+                                    </fieldset>
                                 </td>
                             </tr>
                         }
@@ -235,7 +237,8 @@
         <div class="row align-items-center">
             <!-- Left: Page Size Selector -->
             <div class="col-md-4 text-start">
-                <div class="btn-group btn-group-sm" role="group">
+                <fieldset class="btn-group btn-group-sm" aria-label="Items per page">
+                    <legend class="visually-hidden">Items per page</legend>
                     <span class="align-self-center me-2">Items per page:</span>
                     @foreach (var size in new[] { 5, 10, 25, 50 })
                     {
@@ -250,7 +253,7 @@
                             @size
                         </a>
                     }
-                </div>
+                </fieldset>
             </div>
 
             <!-- Center: Page Info -->

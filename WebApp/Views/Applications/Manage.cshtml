@@ -26,7 +26,7 @@
         </div>
     }
 
-    <!-- Filter Section -->
+    
     <div class="card mb-4">
         <div class="card-body">
             <form method="get" asp-action="Manage" class="row g-3">
@@ -46,9 +46,9 @@
                         <option value="@ApplicationStatus.Completed" selected="@(filterStatus == ApplicationStatus.Completed)">Completed</option>
                     </select>
                 </div>
-                
+                                
                 <div class="col-md-4 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary me-2">
+                    <button type="submit" class="btn btn-primary">
                         <i class="bi bi-funnel"></i> Apply Filter
                     </button>
                     <a asp-action="Manage" asp-route-projectId="@projectId" class="btn btn-outline-secondary">
@@ -68,7 +68,7 @@
         </div>
     }
 
-    <!-- Statistics Cards -->
+    
     <div class="row mb-4">
         <div class="col-md-3">
             <div class="card text-center bg-warning bg-opacity-10">
@@ -131,9 +131,7 @@
                             ApplicationStatus.Completed => "badge bg-info",
                             _ => "badge bg-secondary"
                         };
-
-                        <tr>
-                            <td><strong>#@application.Id</strong></td>
+                        <tr>
                             <td>
                                 <div>
                                     <strong>@application.Volunteer?.FirstName @application.Volunteer?.LastName</strong>
@@ -148,167 +146,4 @@
                                     <i class="bi bi-geo-alt"></i> @application.Volunteer?.City
                                 </div>
                             </td>
-                            <td>
-                                <strong>@application.Project?.Title</strong>
-                            </td>
-                            <td>
-                                @if (application.Volunteer?.Skills != null && application.Volunteer.Skills.Any())
-                                {
-                                    @foreach (var skill in application.Volunteer.Skills.Take(3))
-                                    {
-                                        <span class="badge bg-primary mb-1">@skill</span><br/>
-                                    }
-                                    @if (application.Volunteer.Skills.Count > 3)
-                                    {
-                                        <span class="small text-muted">+@(application.Volunteer.Skills.Count - 3) more</span>
-                                    }
-                                }
-                            </td>
-                            <td>
-                                <div>@application.AppliedAt.ToString("dd/MM/yyyy")</div>
-                                <div class="small text-muted">@application.AppliedAt.ToString("HH:mm")</div>
-                                @if (application.ReviewedAt.HasValue)
-                                {
-                                    <div class="small text-muted mt-1">
-                                        Reviewed: @application.ReviewedAt.Value.ToString("dd/MM/yyyy")
-                                    </div>
-                                }
-                            </td>
-                            <td>
-                                <span class="@statusBadge">@application.Status</span>
-                                @if (!string.IsNullOrEmpty(application.ReviewNotes))
-                                {
-                                    <div class="mt-1">
-                                        <button type="button" 
-                                                class="btn btn-sm btn-outline-info" 
-                                                data-bs-toggle="popover" 
-                                                data-bs-content="@application.ReviewNotes"
-                                                title="Review Notes">
-                                            <i class="bi bi-info-circle"></i> Notes
-                                        </button>
-                                    </div>
-                                }
-                            </td>
-                            <td>
-                                @if (application.Status == ApplicationStatus.Pending)
-                                {
-                                    <div class="btn-group-vertical" role="group">
-                                        <!-- Approve Button -->
-                                        <button type="button" 
-                                                class="btn btn-sm btn-success mb-1" 
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#approveModal@(application.Id)">
-                                            <i class="bi bi-check-circle"></i> Approve
-                                        </button>
-                                        
-                                        <!-- Reject Button -->
-                                        <button type="button" 
-                                                class="btn btn-sm btn-danger" 
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#rejectModal@(application.Id)">
-                                            <i class="bi bi-x-circle"></i> Reject
-                                        </button>
-                                    </div>
-
-                                    <!-- Approve Modal -->
-                                    <div class="modal fade" id="approveModal@(application.Id)" tabindex="-1" aria-labelledby="approveModalLabel@(application.Id)" aria-hidden="true">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <form asp-action="Approve" method="post">
-                                                    @Html.AntiForgeryToken()
-                                                    <input type="hidden" name="id" value="@application.Id" />
-                                                    
-                                                    <div class="modal-header bg-success text-white">
-                                                        <h5 class="modal-title" id="approveModalLabel@(application.Id)">
-                                                            <i class="bi bi-check-circle"></i> Approve Application
-                                                        </h5>
-                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <p>Are you sure you want to approve the application from <strong>@application.Volunteer?.FirstName @application.Volunteer?.LastName</strong>?</p>
-                                                        
-                                                        <div class="mb-3">
-                                                            <label for="approveNotes@(application.Id)" class="form-label">Review Notes (optional):</label>
-                                                            <textarea class="form-control" 
-                                                                      id="approveNotes@(application.Id)" 
-                                                                      name="reviewNotes" 
-                                                                      rows="3" 
-                                                                      placeholder="Add any comments or notes..."></textarea>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                        <button type="submit" class="btn btn-success">
-                                                            <i class="bi bi-check-circle"></i> Confirm Approval
-                                                        </button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Reject Modal -->
-                                    <div class="modal fade" id="rejectModal@(application.Id)" tabindex="-1" aria-labelledby="rejectModalLabel@(application.Id)" aria-hidden="true">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <form asp-action="Reject" method="post">
-                                                    @Html.AntiForgeryToken()
-                                                    <input type="hidden" name="id" value="@application.Id" />
-                                                    
-                                                    <div class="modal-header bg-danger text-white">
-                                                        <h5 class="modal-title" id="rejectModalLabel@(application.Id)">
-                                                            <i class="bi bi-x-circle"></i> Reject Application
-                                                        </h5>
-                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <p>Are you sure you want to reject the application from <strong>@application.Volunteer?.FirstName @application.Volunteer?.LastName</strong>?</p>
-                                                        
-                                                        <div class="mb-3">
-                                                            <label for="rejectNotes@(application.Id)" class="form-label">Reason for Rejection (optional):</label>
-                                                            <textarea class="form-control" 
-                                                                      id="rejectNotes@(application.Id)" 
-                                                                      name="reviewNotes" 
-                                                                      rows="3" 
-                                                                      placeholder="Explain why this application is being rejected..."></textarea>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                        <button type="submit" class="btn btn-danger">
-                                                            <i class="bi bi-x-circle"></i> Confirm Rejection
-                                                        </button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">No actions available</span>
-                                }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    }
-    else
-    {
-        <div class="alert alert-info">
-            <i class="bi bi-info-circle"></i> No applications found matching the current filter.
-        </div>
-    }
-</div>
-
-@section Scripts {
-    <script>
-        // Initialize Bootstrap popovers
-        var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
-        var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
-            return new bootstrap.Popover(popoverTriggerEl)
-        });
-    </script>
-}
+                            <td>                                <strong>@application.Project?.Title</strong>                            </td>                            <td>                                @if (application.Volunteer?.Skills != null && application.Volunteer.Skills.Any())                                {                                    @foreach (var skill in application.Volunteer.Skills.Take(3))                                    {                                        <span class="badge bg-primary mb-1">@skill</span><br/>                                    }                                    @if (application.Volunteer.Skills.Count > 3)                                    {                                        <span class="small text-muted">+@(application.Volunteer.Skills.Count - 3) more</span>                                    }                                }                            </td>                            <td>                                <div>@application.AppliedAt.ToString("dd/MM/yyyy")</div>                                <div class="small text-muted">@application.AppliedAt.ToString("HH:mm")</div>                                @if (application.ReviewedAt.HasValue)                                {                                    <div class="small text-muted mt-1">                                        Reviewed: @application.ReviewedAt.Value.ToString("dd/MM/yyyy")                                    </div>                                }                            </td>                            <td>                                <span class="@statusBadge">@application.Status</span>                                @if (!string.IsNullOrEmpty(application.ReviewNotes))                                {                                    <div class="mt-1">                                        <button type="button"                                                 class="btn btn-sm btn-outline-info"                                                 data-bs-toggle="popover"                                                 data-bs-content="@application.ReviewNotes"                                                title="Review Notes">                                            <i class="bi bi-info-circle"></i> Notes                                        </button>                                    </div>                                }                            </td>                            <td>                                @if (application.Status == ApplicationStatus.Pending)                                {                                    <fieldset class="btn-group-vertical" aria-label="Application actions">                                        <legend class="visually-hidden">Application actions</legend>                                                                                <button type="button"                                                 class="btn btn-sm btn-success mb-1"                                                 data-bs-toggle="modal"                                                 data-bs-target="#approveModal@(application.Id)">                                            <i class="bi bi-check-circle"></i> Approve                                        </button>                                                                                                                         <button type="button"                                                 class="btn btn-sm btn-danger"                                                 data-bs-toggle="modal"                                                 data-bs-target="#rejectModal@(application.Id)">                                            <i class="bi bi-x-circle"></i> Reject                                        </button>                                    </fieldset>                                                                        <div class="modal fade" id="approveModal@(application.Id)" tabindex="-1" aria-labelledby="approveModalLabel@(application.Id)" aria-hidden="true">                                        <div class="modal-dialog">                                            <div class="modal-content">                                                <form asp-action="Approve" method="post">                                                    @Html.AntiForgeryToken()                                                    <input type="hidden" name="id" value="@application.Id" />                                                                                                        <div class="modal-header bg-success text-white">                                                        <h5 class="modal-title" id="approveModalLabel@(application.Id)">                                                            <i class="bi bi-check-circle"></i> Approve Application                                                        </h5>                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>                                                    </div>                                                    <div class="modal-body">                                                        <p>Are you sure you want to approve the application from <strong>@application.Volunteer?.FirstName @application.Volunteer?.LastName</strong>?</p>                                                                                                                <div class="mb-3">                                                            <label for="approveNotes@(application.Id)" class="form-label">Review Notes (optional):</label>                                                            <textarea class="form-control"                                                                       id="approveNotes@(application.Id)"                                                                       name="reviewNotes"                                                                       rows="3"                                                                       placeholder="Add any comments or notes..."></textarea>                                                        </div>                                                    </div>                                                    <div class="modal-footer">                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>                                                        <button type="submit" class="btn btn-success">                                                            <i class="bi bi-check-circle"></i> Confirm Approval                                                        </button>                                                    </div>                                                </form>                                            </div>                                        </div>                                    </div>                                    <!-- Reject Modal -->                                    <div class="modal fade" id="rejectModal@(application.Id)" tabindex="-1" aria-labelledby="rejectModalLabel@(application.Id)" aria-hidden="true">                                        <div class="modal-dialog">                                            <div class="modal-content">                                                <form asp-action="Reject" method="post">                                                    @Html.AntiForgeryToken()                                                    <input type="hidden" name="id" value="@application.Id" />                                                                                                        <div class="modal-header bg-danger text-white">                                                        <h5 class="modal-title" id="rejectModalLabel@(application.Id)">                                                            <i class="bi bi-x-circle"></i> Reject Application                                                        </h5>                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>                                                    </div>                                                    <div class="modal-body">                                                        <p>Are you sure you want to reject the application from <strong>@application.Volunteer?.FirstName @application.Volunteer?.LastName</strong>?</p>                                                                                                                <div class="mb-3">                                                            <label for="rejectNotes@(application.Id)" class="form-label">Reason for Rejection (optional):</label>                                                            <textarea class="form-control"                                                                       id="rejectNotes@(application.Id)"                                                                       name="reviewNotes"                                                                       rows="3"                                                                       placeholder="Explain why this application is being rejected..."></textarea>                                                        </div>                                                    </div>                                                    <div class="modal-footer">                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>                                                        <button type="submit" class="btn btn-danger">                                                            <i class="bi bi-x-circle"></i> Confirm Rejection                                                        </button>                                                    </div>                                                </form>                                            </div>                                        </div>                                    </div>                                }                                else                                {                                    <span class="text-muted">No actions available</span>                                }                            </td>                        </tr>                    }                </tbody>            </table>        </div>    }    else    {        <div class="alert alert-info">            <i class="bi bi-info-circle"></i> No applications found matching the current filter.        </div>    }</div>@section Scripts {    <script>        // Initialize Bootstrap popovers        var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))        var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {            return new bootstrap.Popover(popoverTriggerEl)        });    </script>}
