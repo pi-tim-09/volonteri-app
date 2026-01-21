@@ -11,6 +11,8 @@ namespace WebApp.Controllers
     {
         private readonly IUserService _userService;
         private readonly ILogger<UsersController> _logger;
+        private const String ERROR_MESSAGE = "ErrorMessage";
+        private const String INVALID_REQUEST_DATA = "Invalid request data.";
 
         public UsersController(IUserService userService, ILogger<UsersController> logger)
         {
@@ -21,6 +23,12 @@ namespace WebApp.Controllers
         // GET: Users
         public async Task<IActionResult> Index(string? searchTerm, UserRole? roleFilter, bool? isActiveFilter, int pageNumber = 1, int pageSize = 10)
         {
+            if (!ModelState.IsValid)
+            {
+                TempData[ERROR_MESSAGE] = "Invalid filter parameters.";
+                return View(new UserFilterViewModel());
+            }
+
             try
             {
                 var viewModel = await _userService.GetFilteredUsersAsync(
@@ -35,7 +43,7 @@ namespace WebApp.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error loading users index page");
-                TempData["ErrorMessage"] = "An error occurred while loading users.";
+                TempData[ERROR_MESSAGE] = "An error occurred while loading users.";
                 return View(new UserFilterViewModel());
             }
         }
@@ -43,6 +51,12 @@ namespace WebApp.Controllers
         // GET: Users/Details/5
         public async Task<IActionResult> Details(int id)
         {
+            if (!ModelState.IsValid)
+            {
+                TempData[ERROR_MESSAGE] = INVALID_REQUEST_DATA;
+                return RedirectToAction(nameof(Index));
+            }
+
             try
             {
                 var user = await _userService.GetUserByIdAsync(id);
@@ -55,7 +69,7 @@ namespace WebApp.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error loading user details for ID: {UserId}", id);
-                TempData["ErrorMessage"] = "An error occurred while loading user details.";
+                TempData[ERROR_MESSAGE] = "An error occurred while loading user details.";
                 return RedirectToAction(nameof(Index));
             }
         }
@@ -98,6 +112,12 @@ namespace WebApp.Controllers
         // GET: Users/Edit/5
         public async Task<IActionResult> Edit(int id)
         {
+            if (!ModelState.IsValid)
+            {
+                TempData[ERROR_MESSAGE] = INVALID_REQUEST_DATA;
+                return RedirectToAction(nameof(Index));
+            }
+
             try
             {
                 var user = await _userService.GetUserByIdAsync(id);
@@ -124,7 +144,7 @@ namespace WebApp.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error loading user for edit: {UserId}", id);
-                TempData["ErrorMessage"] = "An error occurred while loading the user.";
+                TempData[ERROR_MESSAGE] = "An error occurred while loading the user.";
                 return RedirectToAction(nameof(Index));
             }
         }
@@ -164,6 +184,12 @@ namespace WebApp.Controllers
         // GET: Users/Delete/5
         public async Task<IActionResult> Delete(int id)
         {
+            if (!ModelState.IsValid)
+            {
+                TempData[ERROR_MESSAGE] = INVALID_REQUEST_DATA;
+                return RedirectToAction(nameof(Index));
+            }
+
             try
             {
                 var user = await _userService.GetUserByIdAsync(id);
@@ -176,7 +202,7 @@ namespace WebApp.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error loading user for delete: {UserId}", id);
-                TempData["ErrorMessage"] = "An error occurred while loading the user.";
+                TempData[ERROR_MESSAGE] = "An error occurred while loading the user.";
                 return RedirectToAction(nameof(Index));
             }
         }
@@ -186,6 +212,13 @@ namespace WebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+
+            if (!ModelState.IsValid)
+            {
+                TempData[ERROR_MESSAGE] = INVALID_REQUEST_DATA;
+                return RedirectToAction(nameof(Index));
+            }
+
             try
             {
                 var user = await _userService.GetUserByIdAsync(id);
@@ -202,7 +235,7 @@ namespace WebApp.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting user: {UserId}", id);
-                TempData["ErrorMessage"] = "An error occurred while deleting the user.";
+                TempData[ERROR_MESSAGE] = "An error occurred while deleting the user.";
                 return RedirectToAction(nameof(Index));
             }
         }

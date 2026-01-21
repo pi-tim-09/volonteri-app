@@ -122,6 +122,7 @@ namespace WebApp.Patterns.Structural
     public class EmailNotificationDecorator : NotificationDecorator
     {
         private readonly ILogger<EmailNotificationDecorator> _logger;
+        private const String EMAIL = "unknown@email.com";
 
         public EmailNotificationDecorator(
             INotificationService wrappedService,
@@ -135,7 +136,7 @@ namespace WebApp.Patterns.Structural
         {
             
             await SendEmailAsync(
-                application.Volunteer?.Email ?? "unknown@email.com",
+                application.Volunteer?.Email ?? EMAIL,
                 "Application Approved!",
                 $"Congratulations! Your application #{application.Id} for project '{application.Project?.Title}' has been approved.");
 
@@ -145,7 +146,7 @@ namespace WebApp.Patterns.Structural
         public override async Task NotifyApplicationRejectedAsync(Application application)
         {
             await SendEmailAsync(
-                application.Volunteer?.Email ?? "unknown@email.com",
+                application.Volunteer?.Email ?? EMAIL,
                 "Application Status Update",
                 $"Your application #{application.Id} for project '{application.Project?.Title}' was not selected at this time.");
 
@@ -156,13 +157,13 @@ namespace WebApp.Patterns.Structural
         {
             
             await SendEmailAsync(
-                application.Volunteer?.Email ?? "unknown@email.com",
+                application.Volunteer?.Email ?? EMAIL,
                 "Application Received",
                 $"Thank you for applying! Your application #{application.Id} has been submitted for review.");
 
             
             await SendEmailAsync(
-                application.Project?.Organization?.Email ?? "unknown@email.com",
+                application.Project?.Organization?.Email ?? EMAIL,
                 "New Volunteer Application",
                 $"A new volunteer has applied for your project '{application.Project?.Title}'.");
 
@@ -172,7 +173,7 @@ namespace WebApp.Patterns.Structural
         public override async Task NotifyApplicationWithdrawnAsync(Application application)
         {
             await SendEmailAsync(
-                application.Volunteer?.Email ?? "unknown@email.com",
+                application.Volunteer?.Email ?? EMAIL,
                 "Application Withdrawn",
                 $"Your application #{application.Id} has been successfully withdrawn.");
 

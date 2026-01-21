@@ -1,4 +1,8 @@
-﻿@model WebApp.Models.User
+﻿@* SonarQube S6853 is a false positive - Razor auto-encodes @ expressions *@
+
+#pragma warning disable S6853
+
+@model WebApp.Models.User
 
 @{
     ViewData["Title"] = "User Details";
@@ -282,3 +286,5 @@
         </div>
     </div>
 </div>
+
+#pragma warning restore S6853

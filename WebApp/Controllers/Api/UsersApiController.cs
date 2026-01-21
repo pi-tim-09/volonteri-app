@@ -135,45 +135,6 @@ namespace WebApp.Controllers.Api
                 // Hash the password using secure PBKDF2
                 var passwordHash = _passwordHasher.HashPassword(request.Password);
 
-                // Create user with password hash
-                User newUser = request.Role switch
-                {
-                    UserRole.Volunteer => new Volunteer
-                    {
-                        Email = request.Email,
-                        PasswordHash = passwordHash,
-                        FirstName = request.FirstName,
-                        LastName = request.LastName,
-                        PhoneNumber = request.PhoneNumber,
-                        Role = request.Role,
-                        IsActive = true,
-                        CreatedAt = DateTime.UtcNow
-                    },
-                    UserRole.Organization => new Organization
-                    {
-                        Email = request.Email,
-                        PasswordHash = passwordHash,
-                        FirstName = request.FirstName,
-                        LastName = request.LastName,
-                        PhoneNumber = request.PhoneNumber,
-                        Role = request.Role,
-                        IsActive = true,
-                        CreatedAt = DateTime.UtcNow,
-                        IsVerified = false
-                    },
-                    UserRole.Admin => new Admin
-                    {
-                        Email = request.Email,
-                        PasswordHash = passwordHash,
-                        FirstName = request.FirstName,
-                        LastName = request.LastName,
-                        PhoneNumber = request.PhoneNumber,
-                        Role = request.Role,
-                        IsActive = true,
-                        CreatedAt = DateTime.UtcNow
-                    },
-                    _ => throw new ArgumentException("Invalid user role")
-                };
 
                 // Note: This bypasses UserService and uses repositories directly
                 // This is necessary because UserService.CreateUserAsync doesn't handle passwords

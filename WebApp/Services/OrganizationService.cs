@@ -40,10 +40,11 @@ namespace WebApp.Services
                 _logger.LogInformation("Created new organization: {OrganizationName}", organization.OrganizationName);
                 return created;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not ArgumentNullException)
             {
-                _logger.LogError(ex, "Error creating organization: {OrganizationName}", organization?.OrganizationName);
-                throw;
+                var orgName = organization?.OrganizationName ?? "unknown";
+                _logger.LogError(ex, "Error creating organization: {OrganizationName}", orgName);
+                throw new InvalidOperationException($"Failed to create organization '{orgName}'. See inner exception for details.", ex);
             }
         }
 
@@ -77,7 +78,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating organization: {OrganizationId}", id);
-                throw;
+                throw new InvalidOperationException($"Failed to update organization with ID {id}. See inner exception for details.", ex);
             }
         }
 
@@ -102,10 +103,10 @@ namespace WebApp.Services
                 _logger.LogInformation("Deleted organization: {OrganizationId}", id);
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error deleting organization: {OrganizationId}", id);
-                throw;
+                throw new InvalidOperationException($"Failed to delete organization with ID {id}. See inner exception for details.", ex);
             }
         }
 
@@ -119,7 +120,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving organization by ID: {OrganizationId}", id);
-                throw;
+                throw new InvalidOperationException($"Failed to retrieve organization with ID {id}. See inner exception for details.", ex);
             }
         }
 
@@ -133,7 +134,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving all organizations");
-                throw;
+                throw new InvalidOperationException("Failed to retrieve organization list. See inner exception for details.", ex);
             }
         }
 
@@ -167,7 +168,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error verifying organization: {OrganizationId}", id);
-                throw;
+                throw new InvalidOperationException($"Failed to verify organization with ID {id}. See inner exception for details.", ex);
             }
         }
 
@@ -193,7 +194,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error unverifying organization: {OrganizationId}", id);
-                throw;
+                throw new InvalidOperationException($"Failed to unverify organization with ID {id}. See inner exception for details.", ex);
             }
         }
 
@@ -212,7 +213,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error checking if organization can create project: {OrganizationId}", organizationId);
-                throw;
+                throw new InvalidOperationException($"Failed to validate project creation eligibility for organization {organizationId}. See inner exception for details.", ex);
             }
         }
 
@@ -227,7 +228,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error checking if organization exists: {OrganizationId}", id);
-                throw;
+                throw new InvalidOperationException($"Failed to check existence of organization with ID {id}. See inner exception for details.", ex);
             }
         }
 
@@ -242,7 +243,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error checking if organization can be deleted: {OrganizationId}", id);
-                throw;
+                throw new InvalidOperationException($"Failed to validate deletion eligibility for organization {id}. See inner exception for details.", ex);
             }
         }
     }

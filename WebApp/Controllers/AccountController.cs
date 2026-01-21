@@ -15,18 +15,15 @@ namespace WebApp.Controllers
     public class AccountController : Controller 
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IConfiguration _configuration;
         private readonly IPasswordHasher _passwordHasher;
         private readonly ILogger<AccountController> _logger;
 
         public AccountController(
             IUnitOfWork unitOfWork, 
-            IConfiguration configuration, 
             IPasswordHasher passwordHasher,
             ILogger<AccountController> logger)
         {
             _unitOfWork = unitOfWork;
-            _configuration = configuration;
             _passwordHasher = passwordHasher;
             _logger = logger;
         }

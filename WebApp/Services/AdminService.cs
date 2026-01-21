@@ -44,10 +44,11 @@ namespace WebApp.Services
                 _logger.LogInformation("Created new admin: {Email}", admin.Email);
                 return created;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not ArgumentNullException)
             {
-                _logger.LogError(ex, "Error creating admin: {Email}", admin?.Email);
-                throw;
+                var email = admin?.Email ?? "unknown";
+                _logger.LogError(ex, "Error creating admin: {Email}", email);
+                throw new InvalidOperationException($"Failed to create admin account for {email}. See inner exception for details.", ex);
             }
         }
 
@@ -78,7 +79,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating admin: {AdminId}", id);
-                throw;
+                throw new InvalidOperationException($"Failed to update admin with ID {id}. See inner exception for details.", ex);
             }
         }
 
@@ -103,10 +104,10 @@ namespace WebApp.Services
                 _logger.LogInformation("Deleted admin: {AdminId}", id);
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error deleting admin: {AdminId}", id);
-                throw;
+                throw new InvalidOperationException($"Failed to delete admin with ID {id}. See inner exception for details.", ex);
             }
         }
 
@@ -120,7 +121,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving admin by ID: {AdminId}", id);
-                throw;
+                throw new InvalidOperationException($"Failed to retrieve admin with ID {id}. See inner exception for details.", ex);
             }
         }
 
@@ -134,7 +135,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving all admins");
-                throw;
+                throw new InvalidOperationException("Failed to retrieve admin list. See inner exception for details.", ex);
             }
         }
 
@@ -158,7 +159,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error granting user management permission to admin: {AdminId}", adminId);
-                throw;
+                throw new InvalidOperationException($"Failed to grant user management permission to admin {adminId}. See inner exception for details.", ex);
             }
         }
 
@@ -181,7 +182,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error revoking user management permission from admin: {AdminId}", adminId);
-                throw;
+                throw new InvalidOperationException($"Failed to revoke user management permission from admin {adminId}. See inner exception for details.", ex);
             }
         }
 
@@ -204,7 +205,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error granting organization management permission to admin: {AdminId}", adminId);
-                throw;
+                throw new InvalidOperationException($"Failed to grant organization management permission to admin {adminId}. See inner exception for details.", ex);
             }
         }
 
@@ -227,7 +228,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error revoking organization management permission from admin: {AdminId}", adminId);
-                throw;
+                throw new InvalidOperationException($"Failed to revoke organization management permission from admin {adminId}. See inner exception for details.", ex);
             }
         }
 
@@ -250,7 +251,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error granting project management permission to admin: {AdminId}", adminId);
-                throw;
+                throw new InvalidOperationException($"Failed to grant project management permission to admin {adminId}. See inner exception for details.", ex);
             }
         }
 
@@ -273,7 +274,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error revoking project management permission from admin: {AdminId}", adminId);
-                throw;
+                throw new InvalidOperationException($"Failed to revoke project management permission from admin {adminId}. See inner exception for details.", ex);
             }
         }
 
@@ -288,7 +289,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error checking if admin can manage users: {AdminId}", adminId);
-                throw;
+                throw new InvalidOperationException($"Failed to check user management permission for admin {adminId}. See inner exception for details.", ex);
             }
         }
 
@@ -302,7 +303,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error checking if admin can manage organizations: {AdminId}", adminId);
-                throw;
+                throw new InvalidOperationException($"Failed to check organization management permission for admin {adminId}. See inner exception for details.", ex);
             }
         }
 
@@ -316,7 +317,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error checking if admin can manage projects: {AdminId}", adminId);
-                throw;
+                throw new InvalidOperationException($"Failed to check project management permission for admin {adminId}. See inner exception for details.", ex);
             }
         }
 
@@ -331,7 +332,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error checking if admin can be deleted: {AdminId}", adminId);
-                throw;
+                throw new InvalidOperationException($"Failed to validate deletion eligibility for admin {adminId}. See inner exception for details.", ex);
             }
         }
     }

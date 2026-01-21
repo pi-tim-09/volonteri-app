@@ -11,6 +11,7 @@ namespace WebApp.Controllers
         private readonly IProjectService _projectService;
         private readonly IOrganizationService _organizationService;
         private readonly ILogger<ProjectsController> _logger;
+        private const String ERROR_MESSAGE = "ErrorMessage";
 
         public ProjectsController(
             IProjectService projectService,
@@ -26,6 +27,12 @@ namespace WebApp.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(int? organizationId)
         {
+            if (!ModelState.IsValid)
+            {
+                TempData[ERROR_MESSAGE] = "Invalid filter parameters.";
+                return View(new List<Project>());
+            }
+
             try
             {
                 IEnumerable<Project> projects;
@@ -46,7 +53,7 @@ namespace WebApp.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error loading projects index page");
-                TempData["ErrorMessage"] = "An error occurred while loading projects.";
+                TempData[ERROR_MESSAGE] = "An error occurred while loading projects.";
                 return View(new List<Project>());
             }
         }
@@ -58,6 +65,12 @@ namespace WebApp.Controllers
             if (id == null)
             {
                 return NotFound();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                TempData[ERROR_MESSAGE] = "Invalid request data.";
+                return RedirectToAction(nameof(Index));
             }
 
             try
@@ -76,7 +89,7 @@ namespace WebApp.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error loading project for edit: {ProjectId}", id);
-                TempData["ErrorMessage"] = "An error occurred while loading the project.";
+                TempData[ERROR_MESSAGE] = "An error occurred while loading the project.";
                 return RedirectToAction(nameof(Index));
             }
         }

@@ -89,7 +89,7 @@ public class OrganizationServiceTests
             .ReturnsAsync((Organization o) => o);
 
         // Act
-        var result = await sut.CreateOrganizationAsync(organization);
+        await sut.CreateOrganizationAsync(organization);
 
         // Assert
         capturedOrg.Should().NotBeNull();
@@ -643,8 +643,10 @@ public class OrganizationServiceTests
         Func<Task> act = async () => await sut.CreateOrganizationAsync(org);
 
         // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Database error");
+        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
+        exception.WithMessage("Failed to create organization 'Test'. See inner exception for details.");
+        exception.And.InnerException.Should().BeOfType<InvalidOperationException>()
+            .Which.Message.Should().Be("Database error");
     }
 
     [Fact]
@@ -662,8 +664,10 @@ public class OrganizationServiceTests
         Func<Task> act = async () => await sut.UpdateOrganizationAsync(1, new Organization { Email = "new@test.com" });
 
         // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Update failed");
+        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
+        exception.WithMessage("Failed to update organization with ID 1. See inner exception for details.");
+        exception.And.InnerException.Should().BeOfType<InvalidOperationException>()
+            .Which.Message.Should().Be("Update failed");
     }
 
     [Fact]
@@ -679,8 +683,10 @@ public class OrganizationServiceTests
         Func<Task> act = async () => await sut.GetOrganizationByIdAsync(1);
 
         // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Get failed");
+        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
+        exception.WithMessage("Failed to retrieve organization with ID 1. See inner exception for details.");
+        exception.And.InnerException.Should().BeOfType<InvalidOperationException>()
+            .Which.Message.Should().Be("Get failed");
     }
 
     [Fact]
@@ -696,8 +702,10 @@ public class OrganizationServiceTests
         Func<Task> act = async () => await sut.GetAllOrganizationsAsync();
 
         // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("GetAll failed");
+        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
+        exception.WithMessage("Failed to retrieve organization list. See inner exception for details.");
+        exception.And.InnerException.Should().BeOfType<InvalidOperationException>()
+            .Which.Message.Should().Be("GetAll failed");
     }
 
     [Fact]
@@ -715,8 +723,10 @@ public class OrganizationServiceTests
         Func<Task> act = async () => await sut.VerifyOrganizationAsync(1);
 
         // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Verify failed");
+        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
+        exception.WithMessage("Failed to verify organization with ID 1. See inner exception for details.");
+        exception.And.InnerException.Should().BeOfType<InvalidOperationException>()
+            .Which.Message.Should().Be("Verify failed");
     }
 
     

@@ -55,7 +55,9 @@ namespace WebApp.Services
             {
                 await _unitOfWork.Volunteers.AddAsync(v);
                 await _unitOfWork.SaveChangesAsync();
-                
+
+                _logger.LogInformation("Created new volunteer: {Email}", v.Email);
+
                 // Observer Pattern: Notify observers about new volunteer registration
                 await _volunteerEventPublisher.NotifyVolunteerRegisteredAsync(v);
             }

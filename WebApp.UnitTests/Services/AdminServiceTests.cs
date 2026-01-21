@@ -142,7 +142,7 @@ public class AdminServiceTests
     public async Task DeleteAdminAsync_WhenLastAdmin_Throws()
     {
         var sut = CreateSut();
-        _adminRepo.Setup(r => r.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Admin, bool>>>() ))
+        _adminRepo.Setup(r => r.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Admin, bool>>>()))
             .ReturnsAsync(1);
 
         Func<Task> act = async () => await sut.DeleteAdminAsync(1);
@@ -156,7 +156,7 @@ public class AdminServiceTests
     {
         var sut = CreateSut();
         var admin = new Admin { Id = 1, Email = "admin@example.com" };
-        
+
         _adminRepo.Setup(r => r.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Admin, bool>>>()))
             .ReturnsAsync(2);
         _adminRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(admin);
@@ -172,7 +172,7 @@ public class AdminServiceTests
     public async Task DeleteAdminAsync_WhenAdminNotFound_ReturnsFalse()
     {
         var sut = CreateSut();
-        
+
         _adminRepo.Setup(r => r.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Admin, bool>>>()))
             .ReturnsAsync(2);
         _adminRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync((Admin?)null);
@@ -349,21 +349,21 @@ public class AdminServiceTests
         ok.Should().BeTrue();
     }
 
-    
-
     [Fact]
     public async Task CreateAdminAsync_WhenRepositoryThrows_RethrowsException()
     {
         var sut = CreateSut();
         var admin = new Admin { Email = "test@example.com", FirstName = "Test", LastName = "User", PhoneNumber = "123" };
-        
+
         _adminRepo.Setup(r => r.AddAsync(It.IsAny<Admin>()))
             .ThrowsAsync(new InvalidOperationException("Database error"));
 
         Func<Task> act = async () => await sut.CreateAdminAsync(admin);
 
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Database error");
+        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
+        exception.WithMessage("Failed to create admin account for test@example.com. See inner exception for details.");
+        exception.And.InnerException.Should().BeOfType<InvalidOperationException>()
+            .Which.Message.Should().Be("Database error");
     }
 
     [Fact]
@@ -371,15 +371,17 @@ public class AdminServiceTests
     {
         var sut = CreateSut();
         var existing = new Admin { Id = 1, Email = "old@x.com", FirstName = "Old", LastName = "Admin", PhoneNumber = "0" };
-        
+
         _adminRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(existing);
         _adminRepo.Setup(r => r.Update(It.IsAny<Admin>()))
             .Throws(new InvalidOperationException("Update failed"));
 
         Func<Task> act = async () => await sut.UpdateAdminAsync(1, new Admin { Email = "new@x.com" });
 
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Update failed");
+        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
+        exception.WithMessage("Failed to update admin with ID 1. See inner exception for details.");
+        exception.And.InnerException.Should().BeOfType<InvalidOperationException>()
+            .Which.Message.Should().Be("Update failed");
     }
 
     [Fact]
@@ -387,7 +389,7 @@ public class AdminServiceTests
     {
         var sut = CreateSut();
         var admin = new Admin { Id = 1, Email = "admin@example.com" };
-        
+
         _adminRepo.Setup(r => r.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Admin, bool>>>()))
             .ReturnsAsync(2);
         _adminRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(admin);
@@ -396,6 +398,7 @@ public class AdminServiceTests
 
         Func<Task> act = async () => await sut.DeleteAdminAsync(1);
 
+        // InvalidOperationException passes through the exception filter and is not wrapped
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Delete failed");
     }
@@ -404,28 +407,32 @@ public class AdminServiceTests
     public async Task GetAdminByIdAsync_WhenRepositoryThrows_RethrowsException()
     {
         var sut = CreateSut();
-        
+
         _adminRepo.Setup(r => r.GetByIdAsync(1))
             .ThrowsAsync(new InvalidOperationException("Get failed"));
 
         Func<Task> act = async () => await sut.GetAdminByIdAsync(1);
 
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Get failed");
+        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
+        exception.WithMessage("Failed to retrieve admin with ID 1. See inner exception for details.");
+        exception.And.InnerException.Should().BeOfType<InvalidOperationException>()
+            .Which.Message.Should().Be("Get failed");
     }
 
     [Fact]
     public async Task GetAllAdminsAsync_WhenRepositoryThrows_RethrowsException()
     {
         var sut = CreateSut();
-        
+
         _adminRepo.Setup(r => r.GetAllAsync())
             .ThrowsAsync(new InvalidOperationException("GetAll failed"));
 
         Func<Task> act = async () => await sut.GetAllAdminsAsync();
 
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("GetAll failed");
+        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
+        exception.WithMessage("Failed to retrieve admin list. See inner exception for details.");
+        exception.And.InnerException.Should().BeOfType<InvalidOperationException>()
+            .Which.Message.Should().Be("GetAll failed");
     }
 
     [Fact]
@@ -433,15 +440,17 @@ public class AdminServiceTests
     {
         var sut = CreateSut();
         var admin = new Admin { Id = 1, CanManageUsers = false };
-        
+
         _adminRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(admin);
         _adminRepo.Setup(r => r.Update(It.IsAny<Admin>()))
             .Throws(new InvalidOperationException("Grant failed"));
 
         Func<Task> act = async () => await sut.GrantUserManagementPermissionAsync(1);
 
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Grant failed");
+        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
+        exception.WithMessage("Failed to grant user management permission to admin 1. See inner exception for details.");
+        exception.And.InnerException.Should().BeOfType<InvalidOperationException>()
+            .Which.Message.Should().Be("Grant failed");
     }
 
     [Fact]
@@ -503,57 +512,63 @@ public class AdminServiceTests
     public async Task CanManageUsersAsync_WhenRepositoryThrows_RethrowsException()
     {
         var sut = CreateSut();
-        
+
         _adminRepo.Setup(r => r.CanManageUsersAsync(1))
             .ThrowsAsync(new InvalidOperationException("Check failed"));
 
         Func<Task> act = async () => await sut.CanManageUsersAsync(1);
 
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Check failed");
+        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
+        exception.WithMessage("Failed to check user management permission for admin 1. See inner exception for details.");
+        exception.And.InnerException.Should().BeOfType<InvalidOperationException>()
+            .Which.Message.Should().Be("Check failed");
     }
 
     [Fact]
     public async Task CanManageOrganizationsAsync_WhenRepositoryThrows_RethrowsException()
     {
         var sut = CreateSut();
-        
+
         _adminRepo.Setup(r => r.CanManageOrganizationsAsync(1))
             .ThrowsAsync(new InvalidOperationException("Check failed"));
 
         Func<Task> act = async () => await sut.CanManageOrganizationsAsync(1);
 
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Check failed");
+        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
+        exception.WithMessage("Failed to check organization management permission for admin 1. See inner exception for details.");
+        exception.And.InnerException.Should().BeOfType<InvalidOperationException>()
+            .Which.Message.Should().Be("Check failed");
     }
 
     [Fact]
     public async Task CanManageProjectsAsync_WhenRepositoryThrows_RethrowsException()
     {
         var sut = CreateSut();
-        
+
         _adminRepo.Setup(r => r.CanManageProjectsAsync(1))
             .ThrowsAsync(new InvalidOperationException("Check failed"));
 
         Func<Task> act = async () => await sut.CanManageProjectsAsync(1);
 
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Check failed");
+        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
+        exception.WithMessage("Failed to check project management permission for admin 1. See inner exception for details.");
+        exception.And.InnerException.Should().BeOfType<InvalidOperationException>()
+            .Which.Message.Should().Be("Check failed");
     }
 
     [Fact]
     public async Task CanDeleteAdminAsync_WhenRepositoryThrows_RethrowsException()
     {
         var sut = CreateSut();
-        
+
         _adminRepo.Setup(r => r.CountAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Admin, bool>>>()))
             .ThrowsAsync(new InvalidOperationException("Count failed"));
 
         Func<Task> act = async () => await sut.CanDeleteAdminAsync(1);
 
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Count failed");
+        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
+        exception.WithMessage("Failed to validate deletion eligibility for admin 1. See inner exception for details.");
+        exception.And.InnerException.Should().BeOfType<InvalidOperationException>()
+            .Which.Message.Should().Be("Count failed");
     }
-
-    
 }

@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using FluentAssertions;
+using WebApp.Security;
 
 namespace WebApp.UnitTests.Security;
 
