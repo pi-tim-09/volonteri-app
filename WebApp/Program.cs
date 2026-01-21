@@ -253,6 +253,10 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+#pragma warning disable S6966 // Controller actions should be synchronous - False positive: this is app.Run(), not a controller
 app.Run();
+#pragma warning restore S6966
 
-public partial class Program { }
+public partial class Program {
+    private Program() { }
+}

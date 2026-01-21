@@ -40,10 +40,11 @@ namespace WebApp.Services
                 _logger.LogInformation("Created new project: {ProjectTitle}", project.Title);
                 return created;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not ArgumentNullException)
             {
-                _logger.LogError(ex, "Error creating project: {ProjectTitle}", project?.Title);
-                throw;
+                var title = project?.Title ?? "unknown";
+                _logger.LogError(ex, "Error creating project: {ProjectTitle}", title);
+                throw new InvalidOperationException($"Failed to create project '{title}'. See inner exception for details.", ex);
             }
         }
 
@@ -78,7 +79,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating project: {ProjectId}", id);
-                throw;
+                throw new InvalidOperationException($"Failed to update project with ID {id}. See inner exception for details.", ex);
             }
         }
 
@@ -103,10 +104,10 @@ namespace WebApp.Services
                 _logger.LogInformation("Deleted project: {ProjectId}", id);
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error deleting project: {ProjectId}", id);
-                throw;
+                throw new InvalidOperationException($"Failed to delete project with ID {id}. See inner exception for details.", ex);
             }
         }
 
@@ -120,7 +121,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving project by ID: {ProjectId}", id);
-                throw;
+                throw new InvalidOperationException($"Failed to retrieve project with ID {id}. See inner exception for details.", ex);
             }
         }
 
@@ -134,7 +135,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving all projects");
-                throw;
+                throw new InvalidOperationException("Failed to retrieve project list. See inner exception for details.", ex);
             }
         }
 
@@ -148,7 +149,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving projects by organization: {OrganizationId}", organizationId);
-                throw;
+                throw new InvalidOperationException($"Failed to retrieve projects for organization {organizationId}. See inner exception for details.", ex);
             }
         }
 
@@ -186,7 +187,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error publishing project: {ProjectId}", id);
-                throw;
+                throw new InvalidOperationException($"Failed to publish project with ID {id}. See inner exception for details.", ex);
             }
         }
 
@@ -216,7 +217,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error completing project: {ProjectId}", id);
-                throw;
+                throw new InvalidOperationException($"Failed to complete project with ID {id}. See inner exception for details.", ex);
             }
         }
 
@@ -239,7 +240,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error cancelling project: {ProjectId}", id);
-                throw;
+                throw new InvalidOperationException($"Failed to cancel project with ID {id}. See inner exception for details.", ex);
             }
         }
 
@@ -260,7 +261,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error checking if project can accept volunteers: {ProjectId}", projectId);
-                throw;
+                throw new InvalidOperationException($"Failed to validate volunteer acceptance for project {projectId}. See inner exception for details.", ex);
             }
         }
 
@@ -290,7 +291,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error incrementing volunteer count for project: {ProjectId}", projectId);
-                throw;
+                throw new InvalidOperationException($"Failed to increment volunteer count for project {projectId}. See inner exception for details.", ex);
             }
         }
 
@@ -320,7 +321,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error decrementing volunteer count for project: {ProjectId}", projectId);
-                throw;
+                throw new InvalidOperationException($"Failed to decrement volunteer count for project {projectId}. See inner exception for details.", ex);
             }
         }
 
@@ -335,7 +336,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error checking if project exists: {ProjectId}", id);
-                throw;
+                throw new InvalidOperationException($"Failed to check existence of project with ID {id}. See inner exception for details.", ex);
             }
         }
 
@@ -354,7 +355,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error checking if project can be edited: {ProjectId}", projectId);
-                throw;
+                throw new InvalidOperationException($"Failed to validate edit permission for project {projectId}. See inner exception for details.", ex);
             }
         }
 
@@ -369,7 +370,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error checking if project can be deleted: {ProjectId}", projectId);
-                throw;
+                throw new InvalidOperationException($"Failed to validate deletion eligibility for project {projectId}. See inner exception for details.", ex);
             }
         }
 
@@ -388,7 +389,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error checking if application deadline passed for project: {ProjectId}", projectId);
-                throw;
+                throw new InvalidOperationException($"Failed to check application deadline for project {projectId}. See inner exception for details.", ex);
             }
         }
     }

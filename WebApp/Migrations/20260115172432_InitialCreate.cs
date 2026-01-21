@@ -10,6 +10,12 @@ namespace WebApp.Migrations
     /// <inheritdoc />
     public partial class InitialCreate : Migration
     {
+        private const String INTEGER = "integer";
+        private const String TIMESTAMP = "timestamp with time zone";
+        private const String BOOLEAN = "boolean";
+        private const String TEXT_ARRAY = "text[]";
+        private const String PROJECTS = "Projects";
+        private const String APPLICATIONS = "Applications";
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -17,17 +23,17 @@ namespace WebApp.Migrations
                 name: "User",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<int>(type: INTEGER, nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
                     PasswordHash = table.Column<string>(type: "text", nullable: false),
                     FirstName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     LastName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     PhoneNumber = table.Column<string>(type: "text", nullable: false),
-                    Role = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    LastLoginAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
+                    Role = table.Column<int>(type: INTEGER, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: TIMESTAMP, nullable: false),
+                    LastLoginAt = table.Column<DateTime>(type: TIMESTAMP, nullable: true),
+                    IsActive = table.Column<bool>(type: BOOLEAN, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -40,9 +46,9 @@ namespace WebApp.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false),
                     Department = table.Column<string>(type: "text", nullable: false),
-                    CanManageUsers = table.Column<bool>(type: "boolean", nullable: false),
-                    CanManageOrganizations = table.Column<bool>(type: "boolean", nullable: false),
-                    CanManageProjects = table.Column<bool>(type: "boolean", nullable: false)
+                    CanManageUsers = table.Column<bool>(type: BOOLEAN, nullable: false),
+                    CanManageOrganizations = table.Column<bool>(type: BOOLEAN, nullable: false),
+                    CanManageProjects = table.Column<bool>(type: BOOLEAN, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -59,12 +65,12 @@ namespace WebApp.Migrations
                 name: "Organizations",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<int>(type: INTEGER, nullable: false),
                     OrganizationName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
                     Address = table.Column<string>(type: "text", nullable: false),
                     City = table.Column<string>(type: "text", nullable: false),
-                    VerifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    VerifiedAt = table.Column<DateTime>(type: TIMESTAMP, nullable: true),
                     IsVerified = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
@@ -82,14 +88,14 @@ namespace WebApp.Migrations
                 name: "Volunteers",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<int>(type: INTEGER, nullable: false),
                     DateOfBirth = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Address = table.Column<string>(type: "text", nullable: false),
                     City = table.Column<string>(type: "text", nullable: false),
                     Bio = table.Column<string>(type: "text", nullable: true),
-                    Skills = table.Column<List<string>>(type: "text[]", nullable: false),
-                    Interests = table.Column<List<string>>(type: "text[]", nullable: false),
-                    VolunteerHours = table.Column<int>(type: "integer", nullable: false)
+                    Skills = table.Column<List<string>>(type: TEXT_ARRAY, nullable: false),
+                    Interests = table.Column<List<string>>(type: TEXT_ARRAY, nullable: false),
+                    VolunteerHours = table.Column<int>(type: INTEGER, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -106,23 +112,23 @@ namespace WebApp.Migrations
                 name: "Projects",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<int>(type: INTEGER, nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     Description = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
                     Location = table.Column<string>(type: "text", nullable: false),
                     City = table.Column<string>(type: "text", nullable: false),
-                    StartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ApplicationDeadline = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    MaxVolunteers = table.Column<int>(type: "integer", nullable: false),
-                    CurrentVolunteers = table.Column<int>(type: "integer", nullable: false),
+                    StartDate = table.Column<DateTime>(type: TIMESTAMP, nullable: false),
+                    EndDate = table.Column<DateTime>(type: TIMESTAMP, nullable: false),
+                    ApplicationDeadline = table.Column<DateTime>(type: TIMESTAMP, nullable: false),
+                    MaxVolunteers = table.Column<int>(type: INTEGER, nullable: false),
+                    CurrentVolunteers = table.Column<int>(type: INTEGER, nullable: false),
                     RequiredSkills = table.Column<List<string>>(type: "text[]", nullable: false),
                     Categories = table.Column<List<string>>(type: "text[]", nullable: false),
-                    Status = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    OrganizationId = table.Column<int>(type: "integer", nullable: false)
+                    Status = table.Column<int>(type: INTEGER, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: TIMESTAMP, nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: TIMESTAMP, nullable: true),
+                    OrganizationId = table.Column<int>(type: INTEGER, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -139,14 +145,14 @@ namespace WebApp.Migrations
                 name: "Applications",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<int>(type: INTEGER, nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Status = table.Column<int>(type: "integer", nullable: false),
-                    AppliedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ReviewedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Status = table.Column<int>(type: INTEGER, nullable: false),
+                    AppliedAt = table.Column<DateTime>(type: TIMESTAMP, nullable: false),
+                    ReviewedAt = table.Column<DateTime>(type: TIMESTAMP, nullable: true),
                     ReviewNotes = table.Column<string>(type: "text", nullable: true),
-                    VolunteerId = table.Column<int>(type: "integer", nullable: false),
-                    ProjectId = table.Column<int>(type: "integer", nullable: false)
+                    VolunteerId = table.Column<int>(type: INTEGER, nullable: false),
+                    ProjectId = table.Column<int>(type: INTEGER, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -154,7 +160,7 @@ namespace WebApp.Migrations
                     table.ForeignKey(
                         name: "FK_Applications_Projects_ProjectId",
                         column: x => x.ProjectId,
-                        principalTable: "Projects",
+                        principalTable: PROJECTS,
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -167,33 +173,33 @@ namespace WebApp.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_Applications_ProjectId",
-                table: "Applications",
+                table: APPLICATIONS,
                 column: "ProjectId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Applications_Status",
-                table: "Applications",
+                table: APPLICATIONS,
                 column: "Status");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Applications_VolunteerId_ProjectId",
-                table: "Applications",
+                table: APPLICATIONS,
                 columns: new[] { "VolunteerId", "ProjectId" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Projects_City",
-                table: "Projects",
+                table: PROJECTS,
                 column: "City");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Projects_OrganizationId",
-                table: "Projects",
+                table: PROJECTS,
                 column: "OrganizationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Projects_Status",
-                table: "Projects",
+                table: PROJECTS,
                 column: "Status");
 
             migrationBuilder.CreateIndex(
@@ -215,10 +221,10 @@ namespace WebApp.Migrations
                 name: "Admins");
 
             migrationBuilder.DropTable(
-                name: "Applications");
+                name: APPLICATIONS);
 
             migrationBuilder.DropTable(
-                name: "Projects");
+                name: PROJECTS);
 
             migrationBuilder.DropTable(
                 name: "Volunteers");

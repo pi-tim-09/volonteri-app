@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using WebApp.Models;
 
 namespace WebApp.Patterns.Behavioral
@@ -83,15 +84,17 @@ namespace WebApp.Patterns.Behavioral
     //Factory implementation that creates appropriate state objects
     public class ApplicationStateFactory : IApplicationStateFactory
     {
-        private readonly ILogger<ApplicationStateContext> _contextLogger;
+        private readonly ILogger<ApplicationStateFactory> _logger;
 
-        public ApplicationStateFactory(ILogger<ApplicationStateContext> contextLogger)
+        public ApplicationStateFactory(ILogger<ApplicationStateFactory> contextLogger)
         {
-            _contextLogger = contextLogger;
+            _logger = contextLogger ?? throw new ArgumentNullException(nameof(contextLogger));
         }
 
         public IApplicationState CreateState(ApplicationStatus status)
         {
+            _logger.LogDebug("Creating state for application status: {Status}", status);
+
             return status switch
             {
                 ApplicationStatus.Pending => new PendingState(),
@@ -214,19 +217,20 @@ namespace WebApp.Patterns.Behavioral
     public class ApplicationStateContextFactory : IApplicationStateContextFactory
     {
         private readonly IApplicationStateFactory _stateFactory;
-        private readonly ILogger<ApplicationStateContext> _logger;
+        private readonly ILoggerFactory _loggerFactory;
 
         public ApplicationStateContextFactory(
             IApplicationStateFactory stateFactory,
-            ILogger<ApplicationStateContext> logger)
+            ILoggerFactory loggerFactory)
         {
-            _stateFactory = stateFactory;
-            _logger = logger;
+            _stateFactory = stateFactory ?? throw new ArgumentNullException(nameof(stateFactory));
+            _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
         }
 
         public ApplicationStateContext CreateContext(Application application)
         {
-            return new ApplicationStateContext(application, _stateFactory, _logger);
+            var contextLogger = _loggerFactory.CreateLogger<ApplicationStateContext>();
+            return new ApplicationStateContext(application, _stateFactory, contextLogger);
         }
     }
 }

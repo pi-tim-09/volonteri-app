@@ -13,6 +13,7 @@ namespace WebApp.Data
     {
         private readonly ApplicationDbContext _context;
         private IDbContextTransaction? _transaction;
+        private bool _disposed = false;
 
         // Lazy initialization of repositories
         private IVolunteerRepository? _volunteers;
@@ -117,12 +118,26 @@ namespace WebApp.Data
                 _transaction = null;
             }
         }
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    // Dispose managed resources
+                    _transaction?.Dispose();
+                    _context.Dispose();
+                }
+
+                _disposed = true;
+            }
+        }
 
         // Dispose pattern
         public void Dispose()
         {
-            _transaction?.Dispose();
-            _context.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

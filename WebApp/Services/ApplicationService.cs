@@ -64,10 +64,10 @@ namespace WebApp.Services
                     volunteerId, projectId);
                 return created;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not InvalidOperationException)
             {
-                _logger.LogError(ex, "Error creating application");
-                throw;
+                _logger.LogError(ex, "Error creating application for volunteer {VolunteerId} to project {ProjectId}", volunteerId, projectId);
+                throw new InvalidOperationException($"Failed to create application for volunteer {volunteerId} to project {projectId}. See inner exception for details.", ex);
             }
         }
 
@@ -95,7 +95,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting application: {ApplicationId}", id);
-                throw;
+                throw new InvalidOperationException($"Failed to delete application with ID {id}. See inner exception for details.", ex);
             }
         }
 
@@ -109,7 +109,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving application by ID: {ApplicationId}", id);
-                throw;
+                throw new InvalidOperationException($"Failed to retrieve application with ID {id}. See inner exception for details.", ex);
             }
         }
 
@@ -142,8 +142,10 @@ namespace WebApp.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error filtering applications");
-                throw;
+                var filterContext = projectId.HasValue ? $"project {projectId.Value}" : "all projects";
+                var statusContext = status.HasValue ? $" with status {status.Value}" : "";
+                _logger.LogError(ex, "Error filtering applications for {FilterContext}{StatusContext}", filterContext, statusContext);
+                throw new InvalidOperationException($"Failed to retrieve filtered applications. See inner exception for details.", ex);
             }
         }
 
@@ -189,7 +191,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error approving application: {ApplicationId}", id);
-                throw;
+                throw new InvalidOperationException($"Failed to approve application with ID {id}. See inner exception for details.", ex);
             }
         }
 
@@ -230,7 +232,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error rejecting application: {ApplicationId}", id);
-                throw;
+                throw new InvalidOperationException($"Failed to reject application with ID {id}. See inner exception for details.", ex);
             }
         }
 
@@ -274,7 +276,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error withdrawing application: {ApplicationId}", id);
-                throw;
+                throw new InvalidOperationException($"Failed to withdraw application with ID {id}. See inner exception for details.", ex);
             }
         }
 
@@ -301,8 +303,8 @@ namespace WebApp.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error checking if volunteer can apply to project");
-                throw;
+                _logger.LogError(ex, "Error checking if volunteer {VolunteerId} can apply to project {ProjectId}", volunteerId, projectId);
+                throw new InvalidOperationException($"Failed to validate application eligibility for volunteer {volunteerId} to project {projectId}. See inner exception for details.", ex);
             }
         }
 
@@ -337,7 +339,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error checking if application can be approved: {ApplicationId}", id);
-                throw;
+                throw new InvalidOperationException($"Failed to validate approval eligibility for application {id}. See inner exception for details.", ex);
             }
         }
 
@@ -357,7 +359,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error checking if application can be rejected: {ApplicationId}", id);
-                throw;
+                throw new InvalidOperationException($"Failed to validate rejection eligibility for application {id}. See inner exception for details.", ex);
             }
         }
 
@@ -381,7 +383,7 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error checking if application can be withdrawn: {ApplicationId}", id);
-                throw;
+                throw new InvalidOperationException($"Failed to validate withdrawal eligibility for application {id} by volunteer {volunteerId}. See inner exception for details.", ex);
             }
         }
     }

@@ -2,6 +2,7 @@
 using WebApp.Common;
 using WebApp.DTOs.Auth;
 using WebApp.Interfaces;
+using WebApp.Security;
 using WebApp.Services;
 
 namespace WebApp.Controllers.Api
